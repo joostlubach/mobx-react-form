@@ -1,12 +1,34 @@
 {
   "name": "mobx-react-form",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "private": true,
+  "version": "0.0.1",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/mobx-react-form.js",
+      "types": "./dist/mobx-react-form.d.ts"
+    }
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
+  "scripts": {
+    "dev": "vite",
+    "compile": "tsc -p .",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "NODE_ENV=test jest"
+  },
+  "peerDependencies": {
+    "mobx": "^6.0",
+    "mobx-react": "^7.0",
+    "react": "^18.0",
+    "react-dom": "^18.0"
+  },
+  "dependencies": {
+    "lodash": "^4.17.21",
+    "react-autofocus": "workspace:^",
+    "react-timer": "workspace:^",
+    "react-util": "workspace:^",
+    "ytil": "workspace:^"
+  }
 }

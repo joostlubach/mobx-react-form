@@ -1,6 +1,6 @@
 import React from 'react'
 import { useTimer } from 'react-timer'
-import { useContinuousRef } from 'react-util/hooks/refs'
+import { useContinuousRef } from 'react-util/hooks'
 import { isObject, some } from 'lodash'
 import { translateFormModelErrorPaths } from '../errors'
 import { FormContext } from '../FormContext'

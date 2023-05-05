@@ -1,20 +1,24 @@
 {
-  "extends": "../../tsconfig.base.json",
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "src/**/*.test.ts",
-    "src/**/*.test.tsx"
-  ],
   "compilerOptions": {
-    "rootDir": "src",
+    "target": "ESNext",
     "outDir": "dist",
+    "declaration": true,
+    "useDefineForClassFields": true,
+    "allowJs": false,
+    "skipLibCheck": true,
+    "esModuleInterop": false,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "ESNext",
+    "moduleResolution": "nodenext",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react",
     "baseUrl": "src",
-    "paths": {
-      "~/*": [
-        "*"
-      ]
-    }
-  }
+    "rootDir": "src"
+  },
+  "include": [
+    "src"
+  ],
 }

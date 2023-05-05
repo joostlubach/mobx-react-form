@@ -8,7 +8,7 @@
   "exports": {
     ".": {
       "import": "./dist/mobx-react-form.js",
-      "types": "./dist/mobx-react-form.d.ts"
+      "types": "./dist/index.d.ts"
     }
   },
   "scripts": {
@@ -30,5 +30,10 @@
     "react-timer": "workspace:^",
     "react-util": "workspace:^",
     "ytil": "workspace:^"
+  },
+  "devDependencies": {
+    "vite": "^4.2.0",
+    "vite-plugin-dts": "^2.1.0",
+    "vite-tsconfig-paths": "^4.0.7"
   }
 }

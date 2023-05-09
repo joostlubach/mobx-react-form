@@ -22,5 +22,6 @@ export default defineConfig({
         rollupOptions: {
             external: ['react', 'react-dom', 'mobx', 'mobx-react'],
         },
+        sourcemap: true,
     },
 })

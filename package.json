@@ -7,14 +7,12 @@
   ],
   "exports": {
     ".": {
-      "import": "./dist/mobx-react-form.js",
-      "types": "./dist/index.d.ts"
+      "import": "./src/index.ts",
+      "types": "./src/index.ts"
     }
   },
   "scripts": {
-    "dev": "vite",
-    "compile": "tsc -p .",
-    "build": "vite build",
+    "build": "tsc -p .",
     "preview": "vite preview",
     "test": "NODE_ENV=test jest"
   },

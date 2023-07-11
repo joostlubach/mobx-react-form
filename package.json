@@ -14,7 +14,6 @@
   "scripts": {
     "build": "yarn clean && tsc -p .",
     "clean": "rimraf dist",
-    "preview": "vite preview",
     "test": "NODE_ENV=test jest"
   },
   "peerDependencies": {

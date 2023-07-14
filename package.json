@@ -18,6 +18,7 @@
     "build:tsc-alias": "tsc-alias -p tsconfig.json --outDir .dist",
     "build:copy": "copyfiles -u 1 src/**/*.yml .dist",
     "build:rsync": "rsync -uvaz --delete .dist/ dist/; rm -rf .dist",
+    "clean": "rimraf dist",
     "test": "NODE_ENV=test jest"
   },
   "peerDependencies": {

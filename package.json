@@ -12,7 +12,7 @@
     }
   },
   "scripts": {
-    "build": "yarn build:prepare && yarn build:tsc && yarn build:tsc-alias && yarn build:copy && yarn build:rsync",
+    "build": "pnpm build:prepare && pnpm build:tsc && pnpm build:tsc-alias && pnpm build:copy && pnpm build:rsync",
     "build:prepare": "test -x .build && rm -rf .build; mkdir -p .build",
     "build:tsc": "tsc -p tsconfig.json --outDir .build",
     "build:tsc-alias": "tsc-alias -p tsconfig.json --outDir .build",

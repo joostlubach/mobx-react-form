@@ -54,7 +54,7 @@ export const FormTranslationProvider = memo('FormTranslationProvider', (props: F
   const context = React.useMemo((): FormTranslationFunctions => ({
     ...defaultFormTranslationFunctions,
     ...translation,
-  }), [])
+  }), [translation])
 
   return (
     <FormTranslationContext.Provider value={context}>

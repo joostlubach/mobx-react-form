@@ -255,13 +255,13 @@ export const FormProvider = forwardRef('FormProvider', <M extends FormModel>(pro
     submitting,
     commit,
     reset,
-  }), [])
+  }), [addError, clearErrors, commit, errors, errorsFor, getFieldValue, invalid, isInvalid, model, modified, onChangeFor, reset, setData, setModified, submit, submitting])
 
   React.useEffect(() => {
     if (ref == null) { return }
     assignRef(ref, context)
     return () => { releaseRef(ref, context) }
-  }, [])
+  }, [context, ref])
 
   function render() {
     return (

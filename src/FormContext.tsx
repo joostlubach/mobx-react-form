@@ -1,10 +1,11 @@
+import { isFunction, isObject, some } from 'lodash'
 import React from 'react'
 import { useTimer } from 'react-timer'
 import { forwardRef } from 'react-util'
 import { assignRef, releaseRef, useContinuousRef } from 'react-util/hooks'
-import { isFunction, isObject, some } from 'lodash'
-import { translateFormModelErrorPaths } from './errors'
+
 import { FormTranslationFunctions, FormTranslationProvider } from './FormTranslationContext'
+import { translateFormModelErrorPaths } from './errors'
 import { useFormDataSource } from './hooks'
 import {
   FieldChangeCallback,
@@ -47,8 +48,8 @@ export interface FormContext<M extends FormModel> {
 }
 
 export const FormContext = React.createContext<FormContext<any>>({
-  model:         {},
-  dataSource:    {},
+  model:      {},
+  dataSource: {},
 
   setData:       () => void 0,
   getFieldValue: () => null,
@@ -100,14 +101,14 @@ export const FormProvider = forwardRef('FormProvider', <M extends FormModel>(pro
     beforeSubmit,
     afterSubmit,
     translation,
-    children
+    children,
   } = props
 
   const [modified, setModifiedState] = React.useState<boolean>(false)
-  const [errors, setErrorsState]     = React.useState<FormError[]>([])
-  const [submitting, setSubmitting]  = React.useState<boolean>(false)
+  const [errors, setErrorsState] = React.useState<FormError[]>([])
+  const [submitting, setSubmitting] = React.useState<boolean>(false)
 
-  const modifiedRef    = React.useRef<boolean>(false)
+  const modifiedRef = React.useRef<boolean>(false)
   const initialDataRef = useContinuousRef(initialData)
 
   const setModified = React.useCallback((value: boolean) => {
@@ -156,7 +157,7 @@ export const FormProvider = forwardRef('FormProvider', <M extends FormModel>(pro
   const timer = useTimer()
 
   const submit = React.useCallback(async (...args: any[]): Promise<SubmitResult | undefined> => {
-    const event   = isFormEvent(args[0]) ? args.shift() as React.FormEvent : null
+    const event = isFormEvent(args[0]) ? args.shift() as React.FormEvent : null
     const options = args.shift() ?? {} as SubmitOptions
 
     event?.preventDefault()
@@ -180,7 +181,7 @@ export const FormProvider = forwardRef('FormProvider', <M extends FormModel>(pro
       // Let the model allow some error path translations.
       result = translateFormModelErrorPaths(result, model)
 
-      if (!timer.isDisposed) {
+      if (timer.isEnabled) {
         if (isSuccessResult(result)) {
           setModified(false)
         } else if (result.status === 'invalid') {
@@ -195,11 +196,11 @@ export const FormProvider = forwardRef('FormProvider', <M extends FormModel>(pro
 
       return result
     } finally {
-      if (!timer.isDisposed) {
+      if (timer.isEnabled) {
         setSubmitting(false)
       }
     }
-  }, [modified, beforeSubmit, model, clearErrors, timer.isDisposed, afterSubmit, resetOnSuccess, setModified])
+  }, [modified, beforeSubmit, model, clearErrors, timer.isEnabled, afterSubmit, resetOnSuccess, setModified])
 
   //------
   // Data & errors ref

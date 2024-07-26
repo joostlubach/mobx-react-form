@@ -1,4 +1,5 @@
 import { superConstructor } from 'ytil'
+
 import { SubmitResult } from './types'
 
 export function translateFormErrorPaths(result: SubmitResult, translate: (path: string) => string): SubmitResult

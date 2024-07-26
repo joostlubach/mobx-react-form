@@ -3,7 +3,6 @@ import { useTimer } from 'react-timer'
 import { every } from 'lodash'
 
 export function useAutoFilledDetection(refs: React.RefObject<HTMLElement>[]) {
-
   const timer = useTimer()
   const [autoFilled, setAutoFilled] = React.useState<boolean>(false)
 

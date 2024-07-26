@@ -13,9 +13,9 @@ export function useFormField<T>(name: string | null): FormFieldHook<T | null> {
   const form = React.useContext(FormContext)
   const noop = useFieldChangeCallback(() => {/*noop*/})
 
-  const value       = name == null ? null : form.getFieldValue(name as never) as T
-  const onChange    = name == null ? noop : form.onChangeFor(name as never)
-  const errors      = name == null ? [] : form.errorsFor(name as never)
+  const value = name == null ? null : form.getFieldValue(name as never) as T
+  const onChange = name == null ? noop : form.onChangeFor(name as never)
+  const errors = name == null ? [] : form.errorsFor(name as never)
 
   const hook = [value, onChange, errors, form]
   Object.assign(hook, {value, onChange, errors, form})

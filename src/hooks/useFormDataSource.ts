@@ -10,7 +10,6 @@ export function useFormDataSource<M extends FormModel>(
   dataSource: any,
   upstream:   FormDataSourceUpstream,
 ) {
-
   const {
     modified,
     setModified,
@@ -70,7 +69,6 @@ export function useFormDataSource<M extends FormModel>(
     getFieldValue,
     onChangeFor,
   }
-
 }
 
 export interface FormDataSourceUpstream {

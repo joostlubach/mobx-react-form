@@ -1,6 +1,5 @@
 import { isFunction } from 'lodash'
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export interface FormModel<D = any> {
   submit(): Promise<SubmitResult | undefined> | SubmitResult | undefined
   reset?(): void

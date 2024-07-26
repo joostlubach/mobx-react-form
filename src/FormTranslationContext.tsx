@@ -1,7 +1,7 @@
-import React from 'react'
-import { memo } from 'react-util'
 import { TOptionsBase } from 'i18next'
 import { startCase, upperFirst } from 'lodash'
+import React from 'react'
+import { memo } from 'react-util'
 
 export interface FormTranslationFunctions {
   field:            <TOpts extends TOptionsBase>(name: string, options?: TOpts) => FieldTranslations
@@ -48,7 +48,7 @@ export const FormTranslationProvider = memo('FormTranslationProvider', (props: F
 
   const {
     translation,
-    children
+    children,
   } = props
 
   const context = React.useMemo((): FormTranslationFunctions => ({

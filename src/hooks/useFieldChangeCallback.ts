@@ -15,17 +15,17 @@ export function useFieldChangeCallback<T, U = any>(
   )
 
   return React.useMemo(() => {
-    const callback   = invoke as FieldChangeCallback<T>
+    const callback = invoke as FieldChangeCallback<T>
     callback.partial = invokePartial
     return callback
   }, [invoke, invokePartial])
 }
 
 export function makeFieldChangeCallback<T, U = any>(handler: (value: T, partial: boolean) => U) {
-  const invoke        = (value: T) => handler(value, true)
+  const invoke = (value: T) => handler(value, true)
   const invokePartial = (value: T) => handler(value, false)
 
-  const callback   = invoke as FieldChangeCallback<T>
+  const callback = invoke as FieldChangeCallback<T>
   callback.partial = invokePartial
   return callback
 }

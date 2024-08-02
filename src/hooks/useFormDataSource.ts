@@ -1,7 +1,7 @@
+import { runInAction } from 'mobx'
 import React from 'react'
 import { useRefMap } from 'react-util/hooks'
-import { runInAction } from 'mobx'
-import { FieldChangeCallback, FormData, FormDataKey, FormModel, isProxyModel } from '../types'
+import { FieldChangeCallback, FormData, FormModel, isProxyModel } from '../types'
 
 //------
 // useForm hook
@@ -21,7 +21,7 @@ export function useFormDataSource<M extends FormModel>(
   //------
   // Data & errors ref
 
-  const getFieldValue = React.useCallback(<K extends FormDataKey<M> & string>(name: K) => {
+  const getFieldValue = React.useCallback(<K extends keyof FormData<M>>(name: K) => {
     if (isProxyModel(dataSource)) {
       return dataSource.getValue(name)
     } else {
@@ -35,7 +35,7 @@ export function useFormDataSource<M extends FormModel>(
   const setData = React.useCallback((data: FormData<M>) => {
     runInAction(() => {
       if (isProxyModel(dataSource)) {
-        dataSource.assign(data)
+        dataSource.assign((data as any))
       } else {
         Object.assign(dataSource, data)
       }
@@ -46,7 +46,7 @@ export function useFormDataSource<M extends FormModel>(
 
   const onChangeRefs = useRefMap<any, FieldChangeCallback<any>>([dataSource])
 
-  const onChangeFor = React.useCallback(<K extends FormDataKey<M>>(name: K) => {
+  const onChangeFor = React.useCallback(<K extends keyof FormData<M>>(name: K) => {
     let onChange = onChangeRefs.get(name)
     if (onChange != null) { return onChange }
 

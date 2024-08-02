@@ -1,23 +1,24 @@
 import { isFunction } from 'lodash'
 
-export interface FormModel<D = any> {
+export interface FormModel {
   submit(): Promise<SubmitResult | undefined> | SubmitResult | undefined
   reset?(): void
 }
 
-export interface ProxyFormModel<D extends {}> extends FormModel<D> {
-  getValue: (field: keyof D & string) => any
+export interface ProxyFormModel<D extends Record<string | number | symbol, any>> extends FormModel {
+  getValue: (field: keyof D) => any
   assign:   (data: Partial<D>) => any
 }
 
-export type FormData<M> =
-  M extends FormModel<infer D>
-    ? D extends unknown ? Record<string, any> : D
-    : Record<string, any>
+export type FormData<M extends FormModel> =
+  M extends ProxyFormModel<infer D> ? D
+    : {[K in keyof M as M[K] extends (Function | undefined) ? never : K extends string ? K : never]: M[K]}
 
-export type FormDataKey<M extends FormModel> = keyof FormData<M> | string
+function test<M extends FormModel>(key: keyof FormData<M>) {
+  if (key === 1) { return }
+}
 
-export function isProxyModel(model: FormModel): model is ProxyFormModel<any> {
+export function isProxyModel<D extends Record<string | number | symbol, any>>(model: FormModel): model is ProxyFormModel<D> {
   const proxyModel = model as ProxyFormModel<any>
   return isFunction(proxyModel.assign) && isFunction(proxyModel.getValue)
 }

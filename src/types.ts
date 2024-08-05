@@ -1,7 +1,9 @@
 import { isFunction } from 'lodash'
 
 export interface FormModel {
-  submit(): Promise<SubmitResult | undefined> | SubmitResult | undefined
+  maySubmit?: boolean
+  submit():   Promise<SubmitResult | undefined> | SubmitResult | undefined
+
   reset?(): void
 }
 

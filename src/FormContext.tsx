@@ -41,6 +41,7 @@ export interface FormContext<M extends FormModel> {
   // Submission
   submit:     SubmitFunction
   submitting: boolean
+  maySubmit:  boolean
   commit:     () => any
   reset:      () => any
 }
@@ -67,6 +68,7 @@ export const FormContext = React.createContext<FormContext<any>>({
 
   // Submission
   submit:     () => Promise.resolve(void 0),
+  maySubmit:  false,
   submitting: false,
   commit:     () => void 0,
   reset:      () => void 0,
@@ -153,6 +155,8 @@ export const FormProvider = forwardRef('FormProvider', <M extends FormModel>(pro
   // Submission
 
   const timer = useTimer()
+
+  const maySubmit = (model.maySubmit ?? true) && !submitting
 
   const submit = React.useCallback(async (...args: any[]): Promise<SubmitResult | undefined> => {
     const event = isFormEvent(args[0]) ? args.shift() as React.FormEvent : null
@@ -251,10 +255,11 @@ export const FormProvider = forwardRef('FormProvider', <M extends FormModel>(pro
     setModified,
 
     submit,
+    maySubmit,
     submitting,
     commit,
     reset,
-  }), [addError, clearErrors, commit, errors, errorsFor, getFieldValue, invalid, isInvalid, model, modified, onChangeFor, reset, setData, setModified, submit, submitting])
+  }), [addError, clearErrors, commit, errors, errorsFor, getFieldValue, invalid, isInvalid, maySubmit, model, modified, onChangeFor, reset, setData, setModified, submit, submitting])
 
   React.useEffect(() => {
     if (ref == null) { return }

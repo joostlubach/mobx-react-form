@@ -40,6 +40,7 @@ export interface SubmitOptions {
 export type SubmitResult<D = any, M = any> =
   | SubmitSuccess<D, M>
   | SubmitInvalid
+  | SubmitHttpError
   | SubmitError
 
 export interface SubmitSuccess<D = any, M = any> {
@@ -57,6 +58,10 @@ export interface FormError {
   field:    string | null
   code?:    string | null
   message?: string | null
+}
+
+export interface SubmitHttpError {
+  status: number
 }
 
 export interface SubmitError {

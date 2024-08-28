@@ -3,9 +3,9 @@ import React from 'react'
 import { useTimer } from 'react-timer'
 import { forwardRef } from 'react-util'
 import { assignRef, releaseRef, useContinuousRef } from 'react-util/hooks'
-import { FormTranslationFunctions, FormTranslationProvider } from './FormTranslationContext'
 import { translateFormModelErrorPaths } from './errors'
 import { useFormDataSource } from './hooks'
+import { FormTranslationFunctions, FormTranslationProvider } from './translation'
 import {
   FieldChangeCallback,
   FormData,

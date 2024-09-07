@@ -26,8 +26,8 @@
     "test": "NODE_ENV=test jest"
   },
   "peerDependencies": {
-    "mobx": "^6.0",
-    "mobx-react": "^9.1.1",
+    "mobx": ">=6.0.0",
+    "mobx-react": ">=9.0.0",
     "react": "^18.0"
   },
   "dependencies": {

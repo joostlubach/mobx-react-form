@@ -5,22 +5,11 @@
   "files": [
     "dist"
   ],
-  "main": "./dist/cjs/index.js",
-  "module": "./dist/esm/index.js",
-  "types": "./dist/types/index.d.ts",
+  "main": "./src/index.ts",
   "exports": {
-    ".": {
-      "types": "./dist/types/index.d.ts",
-      "import": "./dist/esm/index.js",
-      "default": "./dist/cjs/index.js"
-    }
+    ".": "./src/index.ts"
   },
   "scripts": {
-    "build": "npm run clean && npm run build:tsc",
-    "build:tsc": "npm run build:tsc:esm && npm run build:tsc:cjs",
-    "build:tsc:esm": "tsc -p tsconfig.prod.json --module esnext --outDir dist/esm --declarationDir dist/types",
-    "build:tsc:cjs": "tsc -p tsconfig.prod.json --module commonjs --outDir dist/cjs --declaration false --declarationMap false",
-    "clean": "rimraf dist",
     "lint": "eslint src --ext .ts,.tsx",
     "check": "tsc -p . --noEmit",
     "test": "NODE_ENV=test jest"
@@ -41,9 +30,6 @@
   },
   "devDependencies": {
     "@types/react": "^18.0",
-    "copyfiles": "^2.4.1",
-    "rimraf": "^5.0.1",
-    "tsc-alias": "^1.8.7",
     "typescript": "^5.1.6"
   }
 }

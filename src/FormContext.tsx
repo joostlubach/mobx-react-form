@@ -3,14 +3,12 @@ import React from 'react'
 import { useTimer } from 'react-timer'
 import { forwardRef } from 'react-util'
 import { assignRef, releaseRef, useContinuousRef } from 'react-util/hooks'
-
-import { FormTranslationFunctions, FormTranslationProvider } from './FormTranslationContext'
 import { translateFormModelErrorPaths } from './errors'
 import { useFormDataSource } from './hooks'
+import { FormTranslationFunctions, FormTranslationProvider } from './translation'
 import {
   FieldChangeCallback,
   FormData,
-  FormDataKey,
   FormError,
   FormModel,
   isSuccessResult,
@@ -25,14 +23,14 @@ export interface FormContext<M extends FormModel> {
   dataSource: any
 
   setData:       (data: FormData<M>) => void
-  getFieldValue: <K extends FormDataKey<M> & string>(field: K) => FormData<M>[K]
-  onChangeFor:   <K extends FormDataKey<M> & string>(field: K) => FieldChangeCallback<FormData<M>[K]>
+  getFieldValue: <K extends keyof FormData<M>>(field: K) => FormData<M>[K]
+  onChangeFor:   <K extends keyof FormData<M>>(field: K) => FieldChangeCallback<FormData<M>[K]>
 
   // Invalidation
   invalid:     boolean
   errors:      FormError[]
-  isInvalid:   (field: FormDataKey<M>) => boolean
-  errorsFor:   (field: FormDataKey<M>, includeChildren?: boolean) => FormError[]
+  isInvalid:   (field: keyof FormData<M>) => boolean
+  errorsFor:   (field: keyof FormData<M>, includeChildren?: boolean) => FormError[]
   addError:    (error: FormError) => void
   clearErrors: () => void
 
@@ -43,6 +41,7 @@ export interface FormContext<M extends FormModel> {
   // Submission
   submit:     SubmitFunction
   submitting: boolean
+  maySubmit:  boolean
   commit:     () => any
   reset:      () => any
 }
@@ -69,6 +68,7 @@ export const FormContext = React.createContext<FormContext<any>>({
 
   // Submission
   submit:     () => Promise.resolve(void 0),
+  maySubmit:  false,
   submitting: false,
   commit:     () => void 0,
   reset:      () => void 0,
@@ -122,11 +122,11 @@ export const FormProvider = forwardRef('FormProvider', <M extends FormModel>(pro
   const invalid = errors.length > 0
 
   const isInvalid = React.useCallback(
-    (field: FormDataKey<M>) => some(errors, error => error.field === field),
+    (field: keyof FormData<M>) => some(errors, error => error.field === field),
     [errors],
   )
 
-  const errorsFor = React.useCallback((field: FormDataKey<M>, includeChildren: boolean = false) => {
+  const errorsFor = React.useCallback((field: keyof FormData<M>, includeChildren: boolean = false) => {
     return errors.filter(error => {
       if (error.field === field) { return true }
       if (includeChildren && error.field?.startsWith(`${String(field)}.`)) { return true }
@@ -143,7 +143,7 @@ export const FormProvider = forwardRef('FormProvider', <M extends FormModel>(pro
     setErrorsState(errorsRef.current = newErrors)
   }, [])
 
-  const clearErrors = React.useCallback((field?: FormDataKey<M>) => {
+  const clearErrors = React.useCallback((field?: keyof FormData<M>) => {
     if (field == null) {
       setErrorsState(errorsRef.current = [])
     } else {
@@ -155,6 +155,8 @@ export const FormProvider = forwardRef('FormProvider', <M extends FormModel>(pro
   // Submission
 
   const timer = useTimer()
+
+  const maySubmit = (model.maySubmit ?? true) && !submitting
 
   const submit = React.useCallback(async (...args: any[]): Promise<SubmitResult | undefined> => {
     const event = isFormEvent(args[0]) ? args.shift() as React.FormEvent : null
@@ -211,7 +213,7 @@ export const FormProvider = forwardRef('FormProvider', <M extends FormModel>(pro
     }
   }, [modifiedRef, autoSubmit, submit])
 
-  const {getFieldValue, setData, onChangeFor} = useFormDataSource(
+  const {getFieldValue, setData, onChangeFor} = useFormDataSource<M>(
     model,
     {
       modified,
@@ -235,7 +237,7 @@ export const FormProvider = forwardRef('FormProvider', <M extends FormModel>(pro
     reset()
   }, [reset])
 
-  const context = React.useMemo(() => ({
+  const context = React.useMemo((): FormContext<M> => ({
     model,
     dataSource: model,
     setData,
@@ -253,10 +255,11 @@ export const FormProvider = forwardRef('FormProvider', <M extends FormModel>(pro
     setModified,
 
     submit,
+    maySubmit,
     submitting,
     commit,
     reset,
-  }), [addError, clearErrors, commit, errors, errorsFor, getFieldValue, invalid, isInvalid, model, modified, onChangeFor, reset, setData, setModified, submit, submitting])
+  }), [addError, clearErrors, commit, errors, errorsFor, getFieldValue, invalid, isInvalid, maySubmit, model, modified, onChangeFor, reset, setData, setModified, submit, submitting])
 
   React.useEffect(() => {
     if (ref == null) { return }
@@ -286,13 +289,6 @@ export const FormProvider = forwardRef('FormProvider', <M extends FormModel>(pro
 
 
 })
-
-//------
-// Hook
-
-export function useForm<M extends FormModel>() {
-  return React.useContext<FormContext<M>>(FormContext)
-}
 
 //------
 // Helpers

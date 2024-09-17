@@ -44,7 +44,7 @@ export function useFormDataSource<M extends FormModel>(
     setModified(modifiedRef.current = true)
   }, [dataSource, modifiedRef, setModified])
 
-  const onChangeRefs = useRefMap<any, FieldChangeCallback<any>>([dataSource])
+  const onChangeRefs = useRefMap<any, FieldChangeCallback<any>>()
 
   const onChangeFor = React.useCallback(<K extends keyof FormData<M>>(name: K) => {
     let onChange = onChangeRefs.get(name)

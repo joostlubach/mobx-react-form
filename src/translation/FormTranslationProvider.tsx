@@ -4,8 +4,8 @@ import { FormTranslationContext } from './FormTranslationContext'
 import { FormTranslationFunctions } from './types'
 
 export interface FormTranslationProviderProps {
-  translation: FormTranslationFunctions
-  children?:   React.ReactNode
+  translation?: FormTranslationFunctions | null
+  children?:    React.ReactNode
 }
 
 export const FormTranslationProvider = memo('FormTranslationProvider', (props: FormTranslationProviderProps) => {
@@ -15,10 +15,14 @@ export const FormTranslationProvider = memo('FormTranslationProvider', (props: F
     children,
   } = props
 
-  return (
-    <FormTranslationContext.Provider value={translation}>
-      {children}
-    </FormTranslationContext.Provider>
-  )
+  if (translation != null) {
+    return (
+      <FormTranslationContext.Provider value={translation}>
+        {children}
+      </FormTranslationContext.Provider>
+    )
+  } else {
+    return <>{children}</>
+  }
 
 })

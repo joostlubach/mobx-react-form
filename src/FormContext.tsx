@@ -270,13 +270,9 @@ export const FormProvider = forwardRef('FormProvider', <M extends FormModel>(pro
   function render() {
     return (
       <FormContext.Provider value={context}>
-        {translation != null ? (
-          <FormTranslationProvider translation={translation}>
-            {renderChildren()}
-          </FormTranslationProvider>
-        ) : (
-          renderChildren()
-        )}
+        <FormTranslationProvider translation={translation}>
+          {renderChildren()}
+        </FormTranslationProvider>
       </FormContext.Provider>
     )
   }

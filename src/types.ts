@@ -78,7 +78,7 @@ export function isInvalidResult(result: SubmitResult | undefined): result is Sub
 }
 
 export type ChangeCallback<T> = (value: T) => any
-export type FieldChangeCallback<T> = ChangeCallback<T> & {partial: ChangeCallback<T>}
+export type FieldChangeCallback<T> = ChangeCallback<T> & {partial?: ChangeCallback<T>}
 
 export function isFieldChangeCallback<T>(callback: ChangeCallback<T> | FieldChangeCallback<T>): callback is FieldChangeCallback<T> {
   return isFunction((callback as FieldChangeCallback<T>).partial)

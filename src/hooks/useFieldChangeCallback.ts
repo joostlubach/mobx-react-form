@@ -33,7 +33,7 @@ export function makeFieldChangeCallback<T, U = any>(handler: (value: T, partial:
 export function invokeFieldChangeCallback<T>(callback: ((value: T) => any) | FieldChangeCallback<T> | undefined, value: T, partial: boolean | undefined) {
   if (callback == null) { return }
   if (isFieldChangeCallback(callback)) {
-    if (partial) {
+    if (partial && callback.partial != null) {
       callback.partial(value)
     } else {
       callback(value)

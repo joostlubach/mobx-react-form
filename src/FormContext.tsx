@@ -86,10 +86,19 @@ export interface FormProviderProps<M extends FormModel> {
   translation?: FormTranslationFunctions
 
   beforeSubmit?: (model: M) => boolean | undefined
-  afterSubmit?:  (result: SubmitResult, model: M) => any
+  afterSubmit?:  AfterSubmitCallback<M> | AfterSubmitMap<M>
 
   children?: React.ReactNode | ((form: FormContext<M>) => React.ReactNode)
 }
+
+export type AfterSubmitMap<M extends FormModel> = {
+  ok?:                AfterSubmitCallback<M>
+  invalid?:           AfterSubmitCallback<M>
+  error?:             AfterSubmitCallback<M>
+  [httpcode: number]: AfterSubmitCallback<M>
+}
+export type AfterSubmitCallback<M extends FormModel> = (result: SubmitResult, model: M) => any
+
 
 export const FormProvider = forwardRef('FormProvider', <M extends FormModel>(props: FormProviderProps<M>, ref: React.Ref<FormContext<M>>) => {
 
@@ -190,7 +199,9 @@ export const FormProvider = forwardRef('FormProvider', <M extends FormModel>(pro
           setErrorsState(errorsRef.current = result.errors)
         }
       }
-      afterSubmit?.(result, model)
+
+      const callback = isFunction(afterSubmit) ? afterSubmit : afterSubmit?.[result.status]
+      callback?.(result, model)
 
       if (isSuccessResult(result) && resetOnSuccess) {
         model.reset?.()

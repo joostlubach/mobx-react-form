@@ -1,5 +1,6 @@
 import { runInAction } from 'mobx'
 import React from 'react'
+import { objectEntries } from '../../../ytil/src/lodashext'
 import { FieldChangeCallback, FormData, FormModel, isProxyModel } from '../types'
 
 //------
@@ -21,7 +22,7 @@ export function useFormDataSource<M extends FormModel>(
   // Data & errors ref
 
   const getFieldValue = React.useCallback(<K extends keyof FormData<M>>(name: K) => {
-    if (isProxyModel(dataSource)) {
+    if (isProxyModel(dataSource) && !dataSource.hasOwnProperty(name)) {
       return dataSource.getValue(name)
     } else {
       return dataSource[name]
@@ -34,7 +35,13 @@ export function useFormDataSource<M extends FormModel>(
   const setData = React.useCallback((data: FormData<M>) => {
     runInAction(() => {
       if (isProxyModel(dataSource)) {
-        dataSource.assign((data as any))
+        for (const [key, value] of objectEntries(data)) {
+          if (dataSource.hasOwnProperty(key)) {
+            Object.assign(dataSource, {[key]: value})
+          } else {
+            dataSource.assign({[key]: value})
+          }
+        }
       } else {
         Object.assign(dataSource, data)
       }

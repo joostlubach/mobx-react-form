@@ -168,8 +168,6 @@ export const FormProvider = observer(<M extends FormModel>(props: FormProviderPr
   const timer = useTimer()
 
   const maySubmit = (model.maySubmit ?? true) && !submitting
-  console.log('maySubmit?', maySubmit)
-
   const submit = React.useCallback(async (...args: any[]): Promise<SubmitResult | undefined> => {
     const event = isFormEvent(args[0]) ? args.shift() as React.FormEvent : null
     const options = args.shift() ?? {} as SubmitOptions

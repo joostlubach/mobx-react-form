@@ -1,7 +1,7 @@
 import { isFunction, isObject, some } from 'lodash'
+import { observer } from 'mobx-react'
 import React from 'react'
 import { useTimer } from 'react-timer'
-import { forwardRef } from 'react-util'
 import { assignRef, releaseRef, useContinuousRef } from 'react-util/hooks'
 import { translateFormModelErrorPaths } from './errors'
 import { useFormDataSource } from './hooks'
@@ -84,6 +84,7 @@ export interface FormProviderProps<M extends FormModel> {
   resetOnSuccess?: boolean
 
   translation?: FormTranslationFunctions
+  formRef?:     React.Ref<FormContext<M>>
 
   beforeSubmit?: (model: M) => boolean | undefined
   afterSubmit?:  AfterSubmitCallback<M> | AfterSubmitMap<M>
@@ -100,12 +101,13 @@ export type AfterSubmitMap<M extends FormModel> = {
 export type AfterSubmitCallback<M extends FormModel> = (result: SubmitResult, model: M) => any
 
 
-export const FormProvider = forwardRef('FormProvider', <M extends FormModel>(props: FormProviderProps<M>, ref: React.Ref<FormContext<M>>) => {
+export const FormProvider = observer(<M extends FormModel>(props: FormProviderProps<M>,) => {
 
   const {
     model,
     initialData,
     resetOnSuccess = false,
+    formRef,
     autoSubmit,
     beforeSubmit,
     afterSubmit,
@@ -166,6 +168,7 @@ export const FormProvider = forwardRef('FormProvider', <M extends FormModel>(pro
   const timer = useTimer()
 
   const maySubmit = (model.maySubmit ?? true) && !submitting
+  console.log('maySubmit?', maySubmit)
 
   const submit = React.useCallback(async (...args: any[]): Promise<SubmitResult | undefined> => {
     const event = isFormEvent(args[0]) ? args.shift() as React.FormEvent : null
@@ -273,10 +276,10 @@ export const FormProvider = forwardRef('FormProvider', <M extends FormModel>(pro
   }), [addError, clearErrors, commit, errors, errorsFor, getFieldValue, invalid, isInvalid, maySubmit, model, modified, onChangeFor, reset, setData, setModified, submit, submitting])
 
   React.useEffect(() => {
-    if (ref == null) { return }
-    assignRef(ref, context)
-    return () => { releaseRef(ref, context) }
-  }, [context, ref])
+    if (formRef == null) { return }
+    assignRef(formRef, context)
+    return () => { releaseRef(formRef, context) }
+  }, [context, formRef])
 
   function render() {
     return (

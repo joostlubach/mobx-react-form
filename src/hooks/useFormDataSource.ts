@@ -35,11 +35,11 @@ export function useFormDataSource<M extends FormModel>(
   const setData = React.useCallback((data: FormData<M>) => {
     runInAction(() => {
       if (isProxyModel(dataSource)) {
-        for (const [key, value] of objectEntries(data)) {
-          if (dataSource.hasOwnProperty(key)) {
-            Object.assign(dataSource, {[key]: value})
+        for (const [name, value] of objectEntries(data)) {
+          if (dataSource.hasOwnProperty(name)) {
+            Object.assign(dataSource, {[name]: value})
           } else {
-            dataSource.assign({[key]: value})
+            dataSource.setValue(name, value)
           }
         }
       } else {

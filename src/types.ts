@@ -9,7 +9,7 @@ export interface FormModel {
 
 export interface ProxyFormModel<D extends Record<string | number | symbol, any>> extends FormModel {
   getValue: (field: keyof D) => any
-  assign:   (data: Partial<D>) => any
+  setValue: (field: keyof D, value: any) => void
 }
 
 export type FormData<M extends FormModel> =
@@ -22,7 +22,7 @@ function test<M extends FormModel>(key: keyof FormData<M>) {
 
 export function isProxyModel<D extends Record<string | number | symbol, any>>(model: FormModel): model is ProxyFormModel<D> {
   const proxyModel = model as ProxyFormModel<any>
-  return isFunction(proxyModel.assign) && isFunction(proxyModel.getValue)
+  return isFunction(proxyModel.setValue) && isFunction(proxyModel.getValue)
 }
 
 //------

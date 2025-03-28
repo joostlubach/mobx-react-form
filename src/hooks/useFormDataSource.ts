@@ -1,6 +1,6 @@
 import { runInAction } from 'mobx'
 import React from 'react'
-import { objectEntries } from '../../../ytil/src/lodashext'
+import { objectEntries } from 'ytil'
 import { FieldChangeCallback, FormData, FormModel, isProxyModel } from '../types'
 
 //------

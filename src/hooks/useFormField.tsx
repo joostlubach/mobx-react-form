@@ -1,7 +1,7 @@
 import React from 'react'
 import { FormContext } from '../FormContext'
-import { FieldChangeCallback, FormError } from '../types'
-import { useFieldChangeCallback } from './useFieldChangeCallback'
+import { ChangeCallbackWithPartial, FormError } from '../types'
+import { useChangeCallback } from './useChangeCallback'
 
 //------
 // useFormField hook
@@ -11,7 +11,7 @@ export function useFormField(name: null): FormFieldHook<null>
 export function useFormField<T>(name: string | null): FormFieldHook<T | null>
 export function useFormField<T>(name: string | null): FormFieldHook<T | null> {
   const form = React.useContext(FormContext)
-  const noop = useFieldChangeCallback(() => {/*noop*/})
+  const noop = useChangeCallback(() => {/*noop*/}, [])
 
   const value = name == null ? null : form.getFieldValue(name as never) as T
   const onChange = name == null ? noop : form.onChangeFor(name as never)
@@ -24,12 +24,12 @@ export function useFormField<T>(name: string | null): FormFieldHook<T | null> {
 
 export type FormFieldHook<T = any> = [
   T,
-  FieldChangeCallback<T>,
+  ChangeCallbackWithPartial<T>,
   FormError[],
   FormContext<any>,
 ] & {
   value:    T
-  onChange: FieldChangeCallback<T>
+  onChange: ChangeCallbackWithPartial<T>
   errors:   FormError[]
   form:     FormContext<any>
 }

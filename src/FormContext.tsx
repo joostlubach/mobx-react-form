@@ -7,7 +7,7 @@ import { translateFormModelErrorPaths } from './errors'
 import { useFormDataSource } from './hooks'
 import { FormTranslationFunctions, FormTranslationProvider } from './translation'
 import {
-  FieldChangeCallback,
+  ChangeCallbackWithPartial,
   FormData,
   FormError,
   FormModel,
@@ -24,7 +24,7 @@ export interface FormContext<M extends FormModel> {
 
   setData:       (data: FormData<M>) => void
   getFieldValue: <K extends keyof FormData<M>>(field: K) => FormData<M>[K]
-  onChangeFor:   <K extends keyof FormData<M>>(field: K) => FieldChangeCallback<FormData<M>[K]>
+  onChangeFor:   <K extends keyof FormData<M>>(field: K) => ChangeCallbackWithPartial<FormData<M>[K]>
 
   // Invalidation
   invalid:     boolean
@@ -306,5 +306,5 @@ function isFormEvent(arg: any): arg is React.FormEvent {
   return (arg as React.FormEvent).nativeEvent instanceof Event
 }
 
-const emptyFieldChangeCallback = (() => void 0) as any as FieldChangeCallback<any>
+const emptyFieldChangeCallback = (() => void 0) as any as ChangeCallbackWithPartial<any>
 emptyFieldChangeCallback.partial = () => void 0

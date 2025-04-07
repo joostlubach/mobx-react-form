@@ -1,7 +1,8 @@
 import { runInAction } from 'mobx'
 import React from 'react'
 import { objectEntries } from 'ytil'
-import { FieldChangeCallback, FormData, FormModel, isProxyModel } from '../types'
+import { ChangeCallbackWithPartial, FormData, FormModel, isProxyModel } from '../types'
+import { makeChangeCallbackWithPartial } from './useChangeCallback'
 
 //------
 // useForm hook
@@ -52,24 +53,32 @@ export function useFormDataSource<M extends FormModel>(
 
 
   const onChangeFor = React.useMemo(() => {
-    const cache = new Map<string | symbol | number, FieldChangeCallback<any>>()
+    const cache = new Map<string | symbol | number, ChangeCallbackWithPartial<any>>()
 
     return <K extends keyof FormData<M>>(name: K) => {
-      let onChange = cache.get(name)
-      if (onChange != null) { return onChange }
+      const existing = cache.get(name)
+      if (existing != null) { return existing }
 
-      onChange = ((value: FormData<M>[K]) => {
-        setData({[name]: value} as any)
-        commit()
-      }) as FieldChangeCallback<FormData<M>[K]>
+      const onChange = makeChangeCallbackWithPartial((update, partial) => {
+        const prevValue = getFieldValue(name)
+        const nextValue = update(prevValue)
+        if (nextValue === prevValue) { return }
+        if (nextValue === undefined) { return }
 
-      onChange.partial = ((value: FormData<M>[K]) => {
-        setData({[name]: value} as any)
+        if (isProxyModel(dataSource) && !dataSource.hasOwnProperty(name)) {
+          dataSource.setValue(name, nextValue)
+        } else {
+          dataSource[name] = nextValue
+        }
+
+        if (partial) {
+          commit()
+        }
       })
       cache.set(name, onChange)
       return onChange
     }
-  }, [commit, setData])
+  }, [commit, dataSource, getFieldValue])
 
 
   return {

@@ -77,7 +77,7 @@ export function isInvalidResult(result: SubmitResult | undefined): result is Sub
   return result?.status === 'invalid'
 }
 
-export type ChangeCallback<T> = ((value: T) => void) & ((updater: (prev: T) => T | void | undefined) => void)
+export type ChangeCallback<T> = ((value: T) => void) & ((updater: (prev: T) => T) => void)
 export type ChangeCallbackWithPartial<T> = ChangeCallback<T> & {partial?: ChangeCallback<T>}
 
 export function isChangeCallbackWithPartial<T>(callback: ChangeCallback<T> | ChangeCallbackWithPartial<T>): callback is ChangeCallbackWithPartial<T> {

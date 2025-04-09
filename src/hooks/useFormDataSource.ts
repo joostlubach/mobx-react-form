@@ -63,7 +63,6 @@ export function useFormDataSource<M extends FormModel>(
         const prevValue = getFieldValue(name)
         const nextValue = update(prevValue)
         if (nextValue === prevValue) { return }
-        if (nextValue === undefined) { return }
 
         if (isProxyModel(dataSource) && !dataSource.hasOwnProperty(name)) {
           dataSource.setValue(name, nextValue)

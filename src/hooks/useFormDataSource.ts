@@ -64,11 +64,13 @@ export function useFormDataSource<M extends FormModel>(
         const nextValue = update(prevValue)
         if (nextValue === prevValue) { return }
 
-        if (isProxyModel(dataSource) && !dataSource.hasOwnProperty(name)) {
-          dataSource.setValue(name, nextValue)
-        } else {
-          dataSource[name] = nextValue
-        }
+        runInAction(() => {
+          if (isProxyModel(dataSource) && !dataSource.hasOwnProperty(name)) {
+            dataSource.setValue(name, nextValue)
+          } else {
+            dataSource[name] = nextValue
+          }
+        })
 
         if (partial) {
           commit()

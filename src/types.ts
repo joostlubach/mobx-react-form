@@ -87,14 +87,14 @@ export function isChangeCallbackWithPartial<T>(callback: ChangeCallback<T> | Cha
 //------
 // Form customization
 
-export type SubmitButtonSpec = WellKnownSubmitButton | CustomSubmitButton
+export type SaveButtonSpec = WellKnownSaveButton | CustomSaveButton
 
-export enum WellKnownSubmitButton {
+export enum WellKnownSaveButton {
   SAVE,
   NEXT,
 }
 
-export interface CustomSubmitButton {
+export interface CustomSaveButton {
   icon?:   React.ReactNode
   caption: string
 }

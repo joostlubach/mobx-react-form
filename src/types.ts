@@ -14,7 +14,7 @@ export interface ProxyFormModel<D extends Record<string | number | symbol, any>>
 
 export type FormData<M extends FormModel> =
   M extends ProxyFormModel<infer D> ? D
-    : {[K in keyof M as M[K] extends (Function | undefined) ? never : K extends string ? K : never]: M[K]}
+    : Omit<{[K in keyof M as M[K] extends (Function | undefined) ? never : K extends string ? K : never]: M[K]}, 'maySubmit'>
 
 function test<M extends FormModel>(key: keyof FormData<M>) {
   if (key === 1) { return }

@@ -17,19 +17,18 @@
   "peerDependencies": {
     "mobx": "^6.0",
     "mobx-react": "9.2.0",
-    "react": "^18.0"
+    "react": "^19.1"
   },
   "dependencies": {
     "i18next": "^23.2.7",
     "lodash": "^4.17.21",
-    "react": "^18.0",
     "react-autofocus": "workspace:^",
     "react-timer": "workspace:^",
     "react-util": "workspace:^",
     "ytil": "workspace:^"
   },
   "devDependencies": {
-    "@types/react": "^18.0",
+    "@types/react": "^19.1",
     "typescript": "^5.1.6"
   }
 }

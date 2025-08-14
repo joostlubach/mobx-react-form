@@ -52,7 +52,7 @@ export const FormContext = React.createContext<FormContext<any>>({
 
   setData:       () => void 0,
   getFieldValue: () => null,
-  onChangeFor:   () => emptyFieldChangeCallback,
+  onChangeFor:   () => emptyChangeCallback,
 
   // Invalidation
   invalid:     false,
@@ -306,5 +306,5 @@ function isFormEvent(arg: any): arg is React.FormEvent {
   return (arg as React.FormEvent).nativeEvent instanceof Event
 }
 
-const emptyFieldChangeCallback = (() => void 0) as any as ChangeCallbackWithPartial<any>
-emptyFieldChangeCallback.partial = () => void 0
+const emptyChangeCallback = (() => void 0) as any as ChangeCallbackWithPartial<any>
+emptyChangeCallback.partial = () => void 0

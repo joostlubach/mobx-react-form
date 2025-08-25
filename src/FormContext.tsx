@@ -3,6 +3,7 @@ import { observer } from 'mobx-react'
 import React from 'react'
 import { useTimer } from 'react-timer'
 import { assignRef, releaseRef, useContinuousRef } from 'react-util/hooks'
+import { SubmitResult } from './SubmitResult'
 import { translateFormModelErrorPaths } from './errors'
 import { useFormDataSource } from './hooks'
 import { FormTranslationFunctions, FormTranslationProvider } from './translation'
@@ -11,10 +12,8 @@ import {
   FormData,
   FormError,
   FormModel,
-  isSuccessResult,
   SubmitFunction,
   SubmitOptions,
-  SubmitResult,
 } from './types'
 
 export interface FormContext<M extends FormModel> {
@@ -194,9 +193,9 @@ export const FormProvider = observer(<M extends FormModel>(props: FormProviderPr
       result = translateFormModelErrorPaths(result, model)
 
       if (timer.isEnabled) {
-        if (isSuccessResult(result)) {
+        if (SubmitResult.isOk(result)) {
           setModified(false)
-        } else if (result.status === 'invalid') {
+        } else if (SubmitResult.isInvalid(result)) {
           setErrorsState(errorsRef.current = result.errors)
         }
       }
@@ -204,7 +203,7 @@ export const FormProvider = observer(<M extends FormModel>(props: FormProviderPr
       const callback = isFunction(afterSubmit) ? afterSubmit : afterSubmit?.[result.status]
       callback?.(result, model)
 
-      if (isSuccessResult(result) && resetOnSuccess) {
+      if (SubmitResult.isOk(result) && resetOnSuccess) {
         model.reset?.()
       }
 

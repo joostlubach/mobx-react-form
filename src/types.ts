@@ -1,4 +1,5 @@
 import { isFunction } from 'lodash'
+import { SubmitResult } from './SubmitResult'
 
 export interface FormModel {
   maySubmit?: boolean
@@ -15,10 +16,6 @@ export interface ProxyFormModel<D extends Record<string | number | symbol, any>>
 export type FormData<M extends FormModel> =
   M extends ProxyFormModel<infer D> ? D
     : Omit<{[K in keyof M as M[K] extends (Function | undefined) ? never : K extends string ? K : never]: M[K]}, 'maySubmit'>
-
-function test<M extends FormModel>(key: keyof FormData<M>) {
-  if (key === 1) { return }
-}
 
 export function isProxyModel<D extends Record<string | number | symbol, any>>(model: FormModel): model is ProxyFormModel<D> {
   const proxyModel = model as ProxyFormModel<any>
@@ -37,51 +34,20 @@ export interface SubmitOptions {
   ifModified?: boolean
 }
 
-export type SubmitResult<D = any, M = any> =
-  | SubmitSuccess<D, M>
-  | SubmitInvalid
-  | SubmitHttpError
-  | SubmitError
-
-export interface SubmitSuccess<D = any, M = any> {
-  status: 'ok'
-  data?:  D
-  meta?:  M
-}
-
-export interface SubmitInvalid {
-  status: 'invalid'
-  errors: FormError[]
-}
-
-export interface FormError {
-  field:    string | null
-  code?:    string | null
-  message?: string | null
-}
-
-export interface SubmitHttpError {
-  status: number
-}
-
-export interface SubmitError {
-  status: 'error'
-  error:  Error
-}
-
-export function isSuccessResult(result: SubmitResult | undefined): result is SubmitSuccess {
-  return result?.status === 'ok'
-}
-
-export function isInvalidResult(result: SubmitResult | undefined): result is SubmitInvalid {
-  return result?.status === 'invalid'
-}
-
 export type ChangeCallback<T> = ((value: T) => void) & ((updater: (prev: T) => T) => void)
 export type ChangeCallbackWithPartial<T> = ChangeCallback<T> & {partial?: ChangeCallback<T>}
 
 export function isChangeCallbackWithPartial<T>(callback: ChangeCallback<T> | ChangeCallbackWithPartial<T>): callback is ChangeCallbackWithPartial<T> {
   return isFunction((callback as ChangeCallbackWithPartial<T>).partial)
+}
+
+//------
+// Errors
+
+export interface FormError {
+  field:    string | null
+  code?:    string | null
+  message?: string | null
 }
 
 //------

@@ -29,7 +29,7 @@ export interface FormContext<M extends FormModel> {
   invalid:     boolean
   errors:      FormError[]
   isInvalid:   (field: keyof FormData<M>) => boolean
-  errorsFor:   (field: keyof FormData<M>, includeChildren?: boolean) => FormError[]
+  errorsFor:   (field: keyof FormData<M> | null, includeChildren?: boolean) => FormError[]
   addError:    (error: FormError) => void
   clearErrors: () => void
 
@@ -136,7 +136,7 @@ export const FormProvider = observer(<M extends FormModel>(props: FormProviderPr
     [errors],
   )
 
-  const errorsFor = React.useCallback((field: keyof FormData<M>, includeChildren: boolean = false) => {
+  const errorsFor = React.useCallback((field: keyof FormData<M> | null, includeChildren: boolean = false) => {
     return errors.filter(error => {
       if (error.field === field) { return true }
       if (includeChildren && error.field?.startsWith(`${String(field)}.`)) { return true }

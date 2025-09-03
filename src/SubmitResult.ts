@@ -24,7 +24,7 @@ export interface SubmitHttpError {
 
 export interface SubmitError {
   status: 'error'
-  error:  Error
+  error:  object
 }
 
 export namespace SubmitResult {

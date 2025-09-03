@@ -11,7 +11,7 @@ export interface FormTranslationFunctions {
 }
 
 export interface FieldTranslations {
-  caption?:     string
+  caption:      string
   prompt?:      string
   label?:       string | Record<'off' | 'on', string> | null
   placeholder?: string | null

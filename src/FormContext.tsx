@@ -83,7 +83,7 @@ export interface FormProviderProps<M extends FormModel> {
   resetOnSuccess?: boolean
 
   translation?: FormTranslationFunctions
-  formRef?:     React.Ref<FormContext<M>>
+  formRef?:     React.Ref<FormContext<M> | null>
 
   beforeSubmit?: (model: M) => boolean | undefined
   afterSubmit?:  AfterSubmitCallback<M> | AfterSubmitMap<M>

@@ -1,11 +1,10 @@
 import React from 'react'
 import { memo } from 'react-util'
 import { FormTranslationContext } from './FormTranslationContext'
-import { defaultFormTranslationFunctions } from './defaults'
 import { FormTranslationFunctions } from './types'
 
 export interface FormTranslationProviderProps {
-  translation?: FormTranslationFunctions
+  translation?: FormTranslationFunctions | null
   children?:    React.ReactNode
 }
 
@@ -16,15 +15,14 @@ export const FormTranslationProvider = memo('FormTranslationProvider', (props: F
     children,
   } = props
 
-  const context = React.useMemo((): FormTranslationFunctions => ({
-    ...defaultFormTranslationFunctions,
-    ...translation,
-  }), [translation])
-
-  return (
-    <FormTranslationContext.Provider value={context}>
-      {children}
-    </FormTranslationContext.Provider>
-  )
+  if (translation != null) {
+    return (
+      <FormTranslationContext.Provider value={translation}>
+        {children}
+      </FormTranslationContext.Provider>
+    )
+  } else {
+    return <>{children}</>
+  }
 
 })

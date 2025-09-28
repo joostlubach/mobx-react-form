@@ -1,6 +1,5 @@
 import { superConstructor } from 'ytil'
-
-import { SubmitResult } from './types'
+import { SubmitResult } from './SubmitResult'
 
 export function translateFormErrorPaths(result: SubmitResult, translate: (path: string) => string): SubmitResult
 export function translateFormErrorPaths(result: SubmitResult | undefined, translate: (path: string) => string): SubmitResult | undefined
@@ -28,6 +27,7 @@ function getFormModelErrorPathMap(ctor: any): Record<string, string> {
 }
 
 export function translateFormModelErrorPaths(result: SubmitResult, formModel: object): SubmitResult
+export function translateFormModelErrorPaths(result: undefined, formModel: object): undefined
 export function translateFormModelErrorPaths(result: SubmitResult | undefined, formModel: object): SubmitResult | undefined
 export function translateFormModelErrorPaths(result: SubmitResult | undefined, formModel: object) {
   const pathMap = getFormModelErrorPathMap(formModel.constructor)

@@ -1,17 +1,17 @@
-import { TOptionsBase } from 'i18next'
+import { TOptions } from 'i18next'
 
 export interface FormTranslationFunctions {
-  field:            <TOpts extends TOptionsBase>(name: string, options?: TOpts) => FieldTranslations
-  fieldCaption:     <TOpts extends TOptionsBase>(name: string, options?: TOpts) => FieldTranslations['caption']
-  fieldPrompt:      <TOpts extends TOptionsBase>(name: string, options?: TOpts) => FieldTranslations['prompt']
-  fieldLabel:       <TOpts extends TOptionsBase>(name: string, options?: TOpts) => FieldTranslations['label']
-  fieldPlaceholder: <TOpts extends TOptionsBase>(name: string, options?: TOpts) => FieldTranslations['placeholder']
-  fieldInstruction: <TOpts extends TOptionsBase>(name: string, options?: TOpts) => FieldTranslations['instruction']
-  fieldError:       <TOpts extends TOptionsBase>(name: string | null, code: string, options?: TOpts) => string | null
+  field:            (name: string, options?: TOptions) => FieldTranslations
+  fieldCaption:     (name: string, options?: TOptions) => FieldTranslations['caption']
+  fieldPrompt:      (name: string, options?: TOptions) => FieldTranslations['prompt']
+  fieldLabel:       (name: string, options?: TOptions) => FieldTranslations['label']
+  fieldPlaceholder: (name: string, options?: TOptions) => FieldTranslations['placeholder']
+  fieldInstruction: (name: string, options?: TOptions) => FieldTranslations['instruction']
+  fieldError:       (name: string | null, code: string, options?: TOptions) => string | null
 }
 
 export interface FieldTranslations {
-  caption?:     string
+  caption:      string
   prompt?:      string
   label?:       string | Record<'off' | 'on', string> | null
   placeholder?: string | null

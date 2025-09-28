@@ -1,20 +1,19 @@
 import { isFunction, isObject, some } from 'lodash'
+import { observer } from 'mobx-react'
 import React from 'react'
 import { useTimer } from 'react-timer'
-import { forwardRef } from 'react-util'
 import { assignRef, releaseRef, useContinuousRef } from 'react-util/hooks'
+import { SubmitResult } from './SubmitResult'
 import { translateFormModelErrorPaths } from './errors'
 import { useFormDataSource } from './hooks'
 import { FormTranslationFunctions, FormTranslationProvider } from './translation'
 import {
-  FieldChangeCallback,
+  ChangeCallbackWithPartial,
   FormData,
   FormError,
   FormModel,
-  isSuccessResult,
   SubmitFunction,
   SubmitOptions,
-  SubmitResult,
 } from './types'
 
 export interface FormContext<M extends FormModel> {
@@ -24,13 +23,13 @@ export interface FormContext<M extends FormModel> {
 
   setData:       (data: FormData<M>) => void
   getFieldValue: <K extends keyof FormData<M>>(field: K) => FormData<M>[K]
-  onChangeFor:   <K extends keyof FormData<M>>(field: K) => FieldChangeCallback<FormData<M>[K]>
+  onChangeFor:   <K extends keyof FormData<M>>(field: K) => ChangeCallbackWithPartial<FormData<M>[K]>
 
   // Invalidation
   invalid:     boolean
   errors:      FormError[]
   isInvalid:   (field: keyof FormData<M>) => boolean
-  errorsFor:   (field: keyof FormData<M>, includeChildren?: boolean) => FormError[]
+  errorsFor:   (field: keyof FormData<M> | null, includeChildren?: boolean) => FormError[]
   addError:    (error: FormError) => void
   clearErrors: () => void
 
@@ -52,7 +51,7 @@ export const FormContext = React.createContext<FormContext<any>>({
 
   setData:       () => void 0,
   getFieldValue: () => null,
-  onChangeFor:   () => emptyFieldChangeCallback,
+  onChangeFor:   () => emptyChangeCallback,
 
   // Invalidation
   invalid:     false,
@@ -84,19 +83,30 @@ export interface FormProviderProps<M extends FormModel> {
   resetOnSuccess?: boolean
 
   translation?: FormTranslationFunctions
+  formRef?:     React.Ref<FormContext<M> | null>
 
   beforeSubmit?: (model: M) => boolean | undefined
-  afterSubmit?:  (result: SubmitResult, model: M) => any
+  afterSubmit?:  AfterSubmitCallback<M> | AfterSubmitMap<M>
 
   children?: React.ReactNode | ((form: FormContext<M>) => React.ReactNode)
 }
 
-export const FormProvider = forwardRef('FormProvider', <M extends FormModel>(props: FormProviderProps<M>, ref: React.Ref<FormContext<M>>) => {
+export type AfterSubmitMap<M extends FormModel> = {
+  ok?:                AfterSubmitCallback<M>
+  invalid?:           AfterSubmitCallback<M>
+  error?:             AfterSubmitCallback<M>
+  [httpcode: number]: AfterSubmitCallback<M>
+}
+export type AfterSubmitCallback<M extends FormModel> = (result: SubmitResult, model: M) => any
+
+
+export const FormProvider = observer(<M extends FormModel>(props: FormProviderProps<M>,) => {
 
   const {
     model,
     initialData,
     resetOnSuccess = false,
+    formRef,
     autoSubmit,
     beforeSubmit,
     afterSubmit,
@@ -126,7 +136,7 @@ export const FormProvider = forwardRef('FormProvider', <M extends FormModel>(pro
     [errors],
   )
 
-  const errorsFor = React.useCallback((field: keyof FormData<M>, includeChildren: boolean = false) => {
+  const errorsFor = React.useCallback((field: keyof FormData<M> | null, includeChildren: boolean = false) => {
     return errors.filter(error => {
       if (error.field === field) { return true }
       if (includeChildren && error.field?.startsWith(`${String(field)}.`)) { return true }
@@ -157,7 +167,6 @@ export const FormProvider = forwardRef('FormProvider', <M extends FormModel>(pro
   const timer = useTimer()
 
   const maySubmit = (model.maySubmit ?? true) && !submitting
-
   const submit = React.useCallback(async (...args: any[]): Promise<SubmitResult | undefined> => {
     const event = isFormEvent(args[0]) ? args.shift() as React.FormEvent : null
     const options = args.shift() ?? {} as SubmitOptions
@@ -184,15 +193,17 @@ export const FormProvider = forwardRef('FormProvider', <M extends FormModel>(pro
       result = translateFormModelErrorPaths(result, model)
 
       if (timer.isEnabled) {
-        if (isSuccessResult(result)) {
+        if (SubmitResult.isOk(result)) {
           setModified(false)
-        } else if (result.status === 'invalid') {
+        } else if (SubmitResult.isInvalid(result)) {
           setErrorsState(errorsRef.current = result.errors)
         }
       }
-      afterSubmit?.(result, model)
 
-      if (isSuccessResult(result) && resetOnSuccess) {
+      const callback = isFunction(afterSubmit) ? afterSubmit : afterSubmit?.[result.status]
+      callback?.(result, model)
+
+      if (SubmitResult.isOk(result) && resetOnSuccess) {
         model.reset?.()
       }
 
@@ -262,21 +273,17 @@ export const FormProvider = forwardRef('FormProvider', <M extends FormModel>(pro
   }), [addError, clearErrors, commit, errors, errorsFor, getFieldValue, invalid, isInvalid, maySubmit, model, modified, onChangeFor, reset, setData, setModified, submit, submitting])
 
   React.useEffect(() => {
-    if (ref == null) { return }
-    assignRef(ref, context)
-    return () => { releaseRef(ref, context) }
-  }, [context, ref])
+    if (formRef == null) { return }
+    assignRef(formRef, context)
+    return () => { releaseRef(formRef, context) }
+  }, [context, formRef])
 
   function render() {
     return (
       <FormContext.Provider value={context}>
-        {translation != null ? (
-          <FormTranslationProvider translation={translation}>
-            {renderChildren()}
-          </FormTranslationProvider>
-        ) : (
-          renderChildren()
-        )}
+        <FormTranslationProvider translation={translation}>
+          {renderChildren()}
+        </FormTranslationProvider>
       </FormContext.Provider>
     )
   }
@@ -298,5 +305,5 @@ function isFormEvent(arg: any): arg is React.FormEvent {
   return (arg as React.FormEvent).nativeEvent instanceof Event
 }
 
-const emptyFieldChangeCallback = (() => void 0) as any as FieldChangeCallback<any>
-emptyFieldChangeCallback.partial = () => void 0
+const emptyChangeCallback = (() => void 0) as any as ChangeCallbackWithPartial<any>
+emptyChangeCallback.partial = () => void 0

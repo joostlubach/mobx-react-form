@@ -1,7 +1,8 @@
 import { runInAction } from 'mobx'
 import React from 'react'
-import { useRefMap } from 'react-util/hooks'
-import { FieldChangeCallback, FormData, FormModel, isProxyModel } from '../types'
+import { objectEntries } from 'ytil'
+import { ChangeCallbackWithPartial, FormData, FormModel, isProxyModel } from '../types'
+import { makeChangeCallbackWithPartial } from './useChangeCallback'
 
 //------
 // useForm hook
@@ -22,7 +23,7 @@ export function useFormDataSource<M extends FormModel>(
   // Data & errors ref
 
   const getFieldValue = React.useCallback(<K extends keyof FormData<M>>(name: K) => {
-    if (isProxyModel(dataSource)) {
+    if (isProxyModel(dataSource) && !dataSource.hasOwnProperty(name)) {
       return dataSource.getValue(name)
     } else {
       return dataSource[name]
@@ -35,7 +36,13 @@ export function useFormDataSource<M extends FormModel>(
   const setData = React.useCallback((data: FormData<M>) => {
     runInAction(() => {
       if (isProxyModel(dataSource)) {
-        dataSource.assign((data as any))
+        for (const [name, value] of objectEntries(data)) {
+          if (dataSource.hasOwnProperty(name)) {
+            Object.assign(dataSource, {[name]: value})
+          } else {
+            dataSource.setValue(name, value)
+          }
+        }
       } else {
         Object.assign(dataSource, data)
       }
@@ -44,23 +51,35 @@ export function useFormDataSource<M extends FormModel>(
     setModified(modifiedRef.current = true)
   }, [dataSource, modifiedRef, setModified])
 
-  const onChangeRefs = useRefMap<any, FieldChangeCallback<any>>([dataSource])
 
-  const onChangeFor = React.useCallback(<K extends keyof FormData<M>>(name: K) => {
-    let onChange = onChangeRefs.get(name)
-    if (onChange != null) { return onChange }
+  const onChangeFor = React.useMemo(() => {
+    const cache = new Map<string | symbol | number, ChangeCallbackWithPartial<any>>()
 
-    onChange = ((value: FormData<M>[K]) => {
-      setData({[name]: value} as any)
-      commit()
-    }) as FieldChangeCallback<FormData<M>[K]>
+    return <K extends keyof FormData<M>>(name: K) => {
+      const existing = cache.get(name)
+      if (existing != null) { return existing }
 
-    onChange.partial = ((value: FormData<M>[K]) => {
-      setData({[name]: value} as any)
-    })
-    onChangeRefs.set(name, onChange)
-    return onChange
-  }, [commit, onChangeRefs, setData])
+      const onChange = makeChangeCallbackWithPartial((update, partial) => {
+        const prevValue = getFieldValue(name)
+        const nextValue = update(prevValue)
+        if (nextValue === prevValue) { return }
+
+        runInAction(() => {
+          if (isProxyModel(dataSource) && !dataSource.hasOwnProperty(name)) {
+            dataSource.setValue(name, nextValue)
+          } else {
+            dataSource[name] = nextValue
+          }
+        })
+
+        if (partial) {
+          commit()
+        }
+      })
+      cache.set(name, onChange)
+      return onChange
+    }
+  }, [commit, dataSource, getFieldValue])
 
 
   return {

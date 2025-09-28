@@ -1,8 +1,8 @@
+import { every } from 'lodash'
 import React from 'react'
 import { useTimer } from 'react-timer'
-import { every } from 'lodash'
 
-export function useAutoFilledDetection(refs: React.RefObject<HTMLElement>[]) {
+export function useAutoFilledDetection(refs: React.RefObject<HTMLElement | null>[]) {
   const timer = useTimer()
   const [autoFilled, setAutoFilled] = React.useState<boolean>(false)
 

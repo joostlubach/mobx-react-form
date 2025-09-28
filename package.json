@@ -20,8 +20,8 @@
     "build:tsc": "npm run build:tsc:esm && npm run build:tsc:cjs",
     "build:tsc:esm": "tsc -p tsconfig.prod.json --module esnext --outDir dist/esm --declarationDir dist/types",
     "build:tsc:cjs": "tsc -p tsconfig.prod.json --module commonjs --outDir dist/cjs --declaration false --declarationMap false",
-    "clean": "rimraf dist",
-    "lint": "eslint src --ext .ts,.tsx",
+    "clean": "rimraf dist tsconfig.tsbuildinfo",
+    "lint": "eslint src --ext ts,tsx",
     "check": "tsc -p . --noEmit",
     "test": "NODE_ENV=test jest"
   },
@@ -31,10 +31,9 @@
     "react": "^18.0"
   },
   "dependencies": {
+    "focus-trap": "^7.6.5",
     "i18next": "^23.2.7",
     "lodash": "^4.17.21",
-    "react": "^18.0",
-    "react-autofocus": "workspace:^",
     "react-timer": "workspace:^",
     "react-util": "workspace:^",
     "ytil": "workspace:^"

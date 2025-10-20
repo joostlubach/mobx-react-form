@@ -39,6 +39,7 @@
     "ytil": "workspace:^"
   },
   "devDependencies": {
+    "@types/lodash": "^4.17.20",
     "@types/react": "^18.0",
     "copyfiles": "^2.4.1",
     "rimraf": "^5.0.1",

@@ -18,7 +18,7 @@ export interface SubmitInvalid {
 }
 
 export interface SubmitHttpError {
-  status: number
+  status:  number
   message: string
 }
 

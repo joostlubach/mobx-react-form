@@ -4,27 +4,27 @@ import { ChangeCallback, ChangeCallbackWithPartial, isChangeCallbackWithPartial 
 
 export function useChangeCallback<T>(
   handler: (update: (prev: T) => T) => void,
-  deps: any[]
+  deps: any[],
 ) {
   return useMemo(
     () => makeChangeCallback(handler),
 
     // Disable this because I always add this hook to additionalHooks.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    deps
+    deps,
   )
 }
 
 export function useChangeCallbackWithPartial<T>(
   handler: (update: (prev: T) => T, partial: boolean) => void,
-  deps: any[]
+  deps: any[],
 ) {
   return useMemo(
     () => makeChangeCallbackWithPartial(handler),
 
     // Disable this because I always add this hook to additionalHooks.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    deps
+    deps,
   )
 }
 
@@ -62,7 +62,7 @@ export function makeChangeCallbackWithPartial<T>(handler: (update: (prev: T) => 
 export function invokeChangeCallbackWithPartial<T>(
   callback: ChangeCallback<T> | ChangeCallbackWithPartial<T> | undefined,
   update: (prev: T) => T,
-  partial: boolean | undefined
+  partial: boolean | undefined,
 ) {
   if (callback == null) { return }
   if (partial && isChangeCallbackWithPartial(callback) && callback.partial != null) {

@@ -1,3 +1,5 @@
+/* eslint-disable react-refresh/only-export-components */
+
 import { isFunction, isObject, some } from 'lodash'
 import { observer } from 'mobx-react'
 import React from 'react'
@@ -100,7 +102,7 @@ export type AfterSubmitMap<M extends FormModel> = {
 export type AfterSubmitCallback<M extends FormModel> = (result: SubmitResult, model: M) => any
 
 
-export const FormProvider = observer(<M extends FormModel>(props: FormProviderProps<M>,) => {
+export const FormProvider = observer(<M extends FormModel>(props: FormProviderProps<M>) => {
 
   const {
     model,

@@ -22,7 +22,7 @@ module.exports = {
   },
 
   files: [
-    'src/**/*.ts?(x)',
+    'src/**/*.ts',
   ],
 
   ignores: [

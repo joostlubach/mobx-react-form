@@ -88,16 +88,9 @@ export interface FormProviderProps<M extends FormModel> {
   formRef?:     React.Ref<FormContext<M> | null>
 
   beforeSubmit?: (model: M) => boolean | undefined
-  afterSubmit?:  AfterSubmitCallback<M> | AfterSubmitMap<M>
+  afterSubmit?:  AfterSubmitCallback<M>
 
   children?: React.ReactNode | ((form: FormContext<M>) => React.ReactNode)
-}
-
-export type AfterSubmitMap<M extends FormModel> = {
-  ok?:                AfterSubmitCallback<M>
-  invalid?:           AfterSubmitCallback<M>
-  error?:             AfterSubmitCallback<M>
-  [httpcode: number]: AfterSubmitCallback<M>
 }
 export type AfterSubmitCallback<M extends FormModel> = (result: SubmitResult, model: M) => any
 

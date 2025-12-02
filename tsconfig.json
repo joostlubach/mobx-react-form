@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
+    "target": "ES2022",
     "moduleResolution": "node",
     "isolatedModules": true,
 
@@ -20,7 +20,7 @@
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
 
-    "lib": ["ESNext", "DOM"],
+    "lib": ["ES2022", "DOM"],
   },
   "include": [
     "src"

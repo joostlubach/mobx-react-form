@@ -1,8 +1,8 @@
 import { runInAction } from 'mobx'
-import React from 'react'
+import { useCallback, useMemo, useRef } from 'react'
 import { objectEntries } from 'ytil'
-import { ChangeCallbackWithPartial, FormData, FormModel, isProxyModel } from '../types'
-import { makeChangeCallbackWithPartial } from './useChangeCallback'
+import { ChangeCallback, FormData, FormModel, isProxyModel } from '../types'
+import { makeChangeCallback } from './useChangeCallback'
 
 //------
 // useForm hook
@@ -17,12 +17,12 @@ export function useFormDataSource<M extends FormModel>(
     commit,
   } = upstream
 
-  const modifiedRef = React.useRef(modified)
+  const modifiedRef = useRef(modified)
 
   //------
   // Data & errors ref
 
-  const getFieldValue = React.useCallback(<K extends keyof FormData<M>>(name: K) => {
+  const getFieldValue = useCallback(<K extends keyof FormData<M>>(name: K) => {
     if (isProxyModel(dataSource) && !dataSource.hasOwnProperty(name)) {
       return dataSource.getValue(name)
     } else {
@@ -33,7 +33,7 @@ export function useFormDataSource<M extends FormModel>(
   // To access the data in the submit function, use a ref instead of a state to prevent
   // having to recreate the submit function each time. That would counter the whole optimization
   // argument of hooks.
-  const setData = React.useCallback((data: FormData<M>) => {
+  const setData = useCallback((data: FormData<M>) => {
     runInAction(() => {
       if (isProxyModel(dataSource)) {
         for (const [name, value] of objectEntries(data)) {
@@ -52,14 +52,14 @@ export function useFormDataSource<M extends FormModel>(
   }, [dataSource, modifiedRef, setModified])
 
 
-  const onChangeFor = React.useMemo(() => {
-    const cache = new Map<string | symbol | number, ChangeCallbackWithPartial<any>>()
+  const onChangeFor = useMemo(() => {
+    const cache = new Map<string | symbol | number, ChangeCallback<any>>()
 
     return <K extends keyof FormData<M>>(name: K) => {
       const existing = cache.get(name)
       if (existing != null) { return existing }
 
-      const onChange = makeChangeCallbackWithPartial((update, partial) => {
+      const onChange = makeChangeCallback(update => {
         const prevValue = getFieldValue(name)
         const nextValue = update(prevValue)
         if (nextValue === prevValue) { return }
@@ -71,22 +71,20 @@ export function useFormDataSource<M extends FormModel>(
             dataSource[name] = nextValue
           }
         })
-
-        if (partial) {
-          commit()
-        }
       })
       cache.set(name, onChange)
       return onChange
     }
-  }, [commit, dataSource, getFieldValue])
+  }, [dataSource, getFieldValue])
 
+  const onCommit = commit
 
   return {
     dataSource,
     setData,
     getFieldValue,
     onChangeFor,
+    onCommit,
   }
 }
 

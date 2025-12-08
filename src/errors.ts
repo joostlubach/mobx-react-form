@@ -38,13 +38,13 @@ export function translateFormModelErrorPaths(result: SubmitResult | undefined, f
 }
 
 export function formErrorPath(path: string) {
-  return function<T, V>(
+  return function<T, V> (
     _value: undefined | ClassAccessorDecoratorTarget<T, V>,
-    context: ClassFieldDecoratorContext<T, V> | ClassAccessorDecoratorContext<T, V>
+    context: ClassFieldDecoratorContext<T, V> | ClassAccessorDecoratorContext<T, V>,
   ): void | ClassAccessorDecoratorResult<T, V> {
     if (typeof context.name !== 'string') { return }
 
-    context.addInitializer(function(this: any) {
+    context.addInitializer(function (this: any) {
       const formModel = this.constructor
       let pathMap = formModelErrorPaths.get(formModel)
       if (pathMap == null) {

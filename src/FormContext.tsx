@@ -10,7 +10,7 @@ import { translateFormModelErrorPaths } from './errors'
 import { useFormDataSource } from './hooks'
 import { FormTranslationFunctions, FormTranslationProvider } from './translation'
 import {
-  ChangeCallbackWithPartial,
+  ChangeCallback,
   FormData,
   FormError,
   FormModel,
@@ -25,7 +25,8 @@ export interface FormContext<M extends FormModel> {
 
   setData:       (data: FormData<M>) => void
   getFieldValue: <K extends keyof FormData<M>>(field: K) => FormData<M>[K]
-  onChangeFor:   <K extends keyof FormData<M>>(field: K) => ChangeCallbackWithPartial<FormData<M>[K]>
+  onChangeFor:   <K extends keyof FormData<M>>(field: K) => ChangeCallback<FormData<M>[K]>
+  onCommit:      () => void
 
   // Invalidation
   invalid:     boolean
@@ -53,7 +54,8 @@ export const FormContext = React.createContext<FormContext<any>>({
 
   setData:       () => void 0,
   getFieldValue: () => null,
-  onChangeFor:   () => emptyChangeCallback,
+  onChangeFor:   () => () => void 0,
+  onCommit:      () => void 0,
 
   // Invalidation
   invalid:     false,
@@ -219,7 +221,7 @@ export const FormProvider = observer(<M extends FormModel>(props: FormProviderPr
     }
   }, [modifiedRef, autoSubmit, submit])
 
-  const {getFieldValue, setData, onChangeFor} = useFormDataSource<M>(
+  const {getFieldValue, setData, onChangeFor, onCommit} = useFormDataSource<M>(
     model,
     {
       modified,
@@ -249,6 +251,7 @@ export const FormProvider = observer(<M extends FormModel>(props: FormProviderPr
     setData,
     getFieldValue,
     onChangeFor,
+    onCommit,
 
     invalid,
     errors,
@@ -265,7 +268,7 @@ export const FormProvider = observer(<M extends FormModel>(props: FormProviderPr
     submitting,
     commit,
     reset,
-  }), [addError, clearErrors, commit, errors, errorsFor, getFieldValue, invalid, isInvalid, maySubmit, model, modified, onChangeFor, reset, setData, setModified, submit, submitting])
+  }), [addError, clearErrors, commit, errors, errorsFor, getFieldValue, invalid, isInvalid, maySubmit, model, modified, onChangeFor, onCommit, reset, setData, setModified, submit, submitting])
 
   React.useEffect(() => {
     if (formRef == null) { return }
@@ -299,6 +302,3 @@ function isFormEvent(arg: any): arg is React.FormEvent {
   if (!isObject(arg)) { return false }
   return (arg as React.FormEvent).nativeEvent instanceof Event
 }
-
-const emptyChangeCallback = (() => void 0) as any as ChangeCallbackWithPartial<any>
-emptyChangeCallback.partial = () => void 0

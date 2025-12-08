@@ -35,11 +35,7 @@ export interface SubmitOptions {
 }
 
 export type ChangeCallback<T> = ((value: T) => void) & ((updater: (prev: T) => T) => void)
-export type ChangeCallbackWithPartial<T> = ChangeCallback<T> & {partial?: ChangeCallback<T>}
-
-export function isChangeCallbackWithPartial<T>(callback: ChangeCallback<T> | ChangeCallbackWithPartial<T>): callback is ChangeCallbackWithPartial<T> {
-  return isFunction((callback as ChangeCallbackWithPartial<T>).partial)
-}
+export type CommitCallback = () => void
 
 //------
 // Errors

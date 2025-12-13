@@ -2,7 +2,6 @@ import { runInAction } from 'mobx'
 import { useCallback, useMemo, useRef } from 'react'
 import { objectEntries } from 'ytil'
 import { ChangeCallback, FormData, FormModel, isProxyModel } from '../types'
-import { makeChangeCallback } from './useChangeCallback'
 
 //------
 // useForm hook
@@ -59,9 +58,8 @@ export function useFormDataSource<M extends FormModel>(
       const existing = cache.get(name)
       if (existing != null) { return existing }
 
-      const onChange = makeChangeCallback(update => {
+      const onChange = (nextValue: FormData<M>[K]) => {
         const prevValue = getFieldValue(name)
-        const nextValue = update(prevValue)
         if (nextValue === prevValue) { return }
 
         runInAction(() => {
@@ -72,7 +70,7 @@ export function useFormDataSource<M extends FormModel>(
           }
         })
         setModified(modifiedRef.current = true)
-      })
+      }
       cache.set(name, onChange)
       return onChange
     }

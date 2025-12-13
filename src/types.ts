@@ -34,7 +34,7 @@ export interface SubmitOptions {
   ifModified?: boolean
 }
 
-export type ChangeCallback<T> = ((value: T) => void) & ((updater: (prev: T) => T) => void)
+export type ChangeCallback<T> = (value: T) => void
 export type CommitCallback = () => void
 
 //------

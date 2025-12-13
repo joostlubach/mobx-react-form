@@ -71,11 +71,12 @@ export function useFormDataSource<M extends FormModel>(
             dataSource[name] = nextValue
           }
         })
+        setModified(modifiedRef.current = true)
       })
       cache.set(name, onChange)
       return onChange
     }
-  }, [dataSource, getFieldValue])
+  }, [dataSource, getFieldValue, setModified])
 
   const onCommit = commit
 

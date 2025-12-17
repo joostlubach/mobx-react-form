@@ -9,7 +9,7 @@ export interface FormModel {
 }
 
 export interface ProxyFormModel<D extends Record<string | number | symbol, any>> extends FormModel {
-  getValue: (field: keyof D) => any
+  getValue: (field: keyof D) => void
   setValue: (field: keyof D, value: any) => void
 }
 

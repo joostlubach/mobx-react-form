@@ -89,6 +89,6 @@ export function useFormDataSource<M extends FormModel>(
 
 export interface FormDataSourceUpstream {
   modified:    boolean
-  setModified: (modified: boolean) => any
-  commit:      () => any
+  setModified: (modified: boolean) => void
+  commit:      () => void
 }

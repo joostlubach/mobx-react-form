@@ -44,8 +44,8 @@ export interface FormContext<M extends FormModel> {
   submit:     SubmitFunction
   submitting: boolean
   maySubmit:  boolean
-  commit:     () => any
-  reset:      () => any
+  commit:     () => void
+  reset:      () => void
 }
 
 export const FormContext = React.createContext<FormContext<any>>({
@@ -94,7 +94,7 @@ export interface FormProviderProps<M extends FormModel> {
 
   children?: React.ReactNode | ((form: FormContext<M>) => React.ReactNode)
 }
-export type AfterSubmitCallback<M extends FormModel> = (result: SubmitResult, model: M) => any
+export type AfterSubmitCallback<M extends FormModel> = (result: SubmitResult, model: M) => void
 
 
 export const FormProvider = observer(<M extends FormModel>(props: FormProviderProps<M>) => {

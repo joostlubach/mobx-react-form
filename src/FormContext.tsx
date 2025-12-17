@@ -1,5 +1,3 @@
- 
-
 import { isFunction, isObject, some } from 'lodash'
 import { observer } from 'mobx-react'
 import React from 'react'

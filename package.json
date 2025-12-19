@@ -26,13 +26,13 @@
     "test": "NODE_ENV=test jest"
   },
   "peerDependencies": {
+    "i18next": "^25",
     "mobx": ">=6.0.0",
     "mobx-react": ">=9.0.0",
     "react": ">=18.0"
   },
   "dependencies": {
     "focus-trap": "^7.6.5",
-    "i18next": "^23.2.7",
     "lodash": "^4.17.21",
     "react-timer": "workspace:^",
     "react-util": "workspace:^",

@@ -214,10 +214,10 @@ export const FormProvider = observer(<M extends FormModel>(props: FormProviderPr
   // Data & errors ref
 
   const commit = React.useCallback(() => {
-    if (autoSubmit && modifiedRef.current) {
+    if (autoSubmit) {
       submit()
     }
-  }, [modifiedRef, autoSubmit, submit])
+  }, [autoSubmit, submit])
 
   const {getFieldValue, setData, onChangeFor, onCommit} = useFormDataSource<M>(
     model,

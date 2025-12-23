@@ -1,4 +1,5 @@
 import { isFunction } from 'lodash'
+import { FormEvent, ReactNode } from 'react'
 import { SubmitResult } from './SubmitResult'
 
 export interface FormModel {
@@ -6,6 +7,7 @@ export interface FormModel {
   submit():   Promise<SubmitResult | undefined> | SubmitResult | undefined
 
   reset?(): void
+  commit?(): void
 }
 
 export interface ProxyFormModel<D extends Record<string | number | symbol, any>> extends FormModel {
@@ -27,7 +29,7 @@ export function isProxyModel<D extends Record<string | number | symbol, any>>(mo
 
 export interface SubmitFunction {
   (options?: SubmitOptions): Promise<SubmitResult | undefined>
-  (event: React.FormEvent, options?: SubmitOptions): Promise<SubmitResult | undefined>
+  (event: FormEvent, options?: SubmitOptions): Promise<SubmitResult | undefined>
 }
 
 export interface SubmitOptions {
@@ -57,6 +59,6 @@ export enum WellKnownSaveButton {
 }
 
 export interface CustomSaveButton {
-  icon?:   React.ReactNode
+  icon?:   ReactNode
   caption: string
 }

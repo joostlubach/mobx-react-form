@@ -1,12 +1,12 @@
 import { every } from 'lodash'
-import React from 'react'
+import { RefObject, useEffect, useState } from 'react'
 import { useTimer } from 'react-timer'
 
-export function useAutoFilledDetection(refs: React.RefObject<HTMLElement | null>[]) {
+export function useAutoFilledDetection(refs: RefObject<HTMLElement | null>[]) {
   const timer = useTimer()
-  const [autoFilled, setAutoFilled] = React.useState<boolean>(false)
+  const [autoFilled, setAutoFilled] = useState<boolean>(false)
 
-  React.useEffect(() => {
+  useEffect(() => {
     timer.setTimeout(() => {
       try {
         const elements = refs.map(ref => ref.current)

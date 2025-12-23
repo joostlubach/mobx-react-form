@@ -1,11 +1,11 @@
-import React from 'react'
+import React, { ReactNode } from 'react'
 import { memo } from 'react-util'
 import { FormTranslationContext } from './FormTranslationContext'
 import { FormTranslationFunctions } from './types'
 
 export interface FormTranslationProviderProps {
   translation?: FormTranslationFunctions | null
-  children?:    React.ReactNode
+  children?:    ReactNode
 }
 
 export const FormTranslationProvider = memo('FormTranslationProvider', (props: FormTranslationProviderProps) => {

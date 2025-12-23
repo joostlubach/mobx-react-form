@@ -1,6 +1,16 @@
 import { isFunction, isObject, some } from 'lodash'
 import { observer } from 'mobx-react'
-import React from 'react'
+import React, {
+  createContext,
+  FormEvent,
+  ReactNode,
+  Ref,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { useTimer } from 'react-timer'
 import { assignRef, releaseRef, useContinuousRef } from 'react-util/hooks'
 import { SubmitResult } from './SubmitResult'
@@ -46,7 +56,7 @@ export interface FormContext<M extends FormModel> {
   reset:      () => void
 }
 
-export const FormContext = React.createContext<FormContext<any>>({
+export const FormContext = createContext<FormContext<any>>({
   model:      {},
   dataSource: {},
 
@@ -85,12 +95,12 @@ export interface FormProviderProps<M extends FormModel> {
   resetOnSuccess?: boolean
 
   translation?: FormTranslationFunctions
-  formRef?:     React.Ref<FormContext<M> | null>
+  formRef?:     Ref<FormContext<M> | null>
 
   beforeSubmit?: (model: M) => boolean | undefined
   afterSubmit?:  AfterSubmitCallback<M>
 
-  children?: React.ReactNode | ((form: FormContext<M>) => React.ReactNode)
+  children?: ReactNode | ((form: FormContext<M>) => ReactNode)
 }
 export type AfterSubmitCallback<M extends FormModel> = (result: SubmitResult, model: M) => void
 
@@ -109,14 +119,14 @@ export const FormProvider = observer(<M extends FormModel>(props: FormProviderPr
     children,
   } = props
 
-  const [modified, setModifiedState] = React.useState<boolean>(false)
-  const [errors, setErrorsState] = React.useState<FormError[]>([])
-  const [submitting, setSubmitting] = React.useState<boolean>(false)
+  const [modified, setModifiedState] = useState<boolean>(false)
+  const [errors, setErrorsState] = useState<FormError[]>([])
+  const [submitting, setSubmitting] = useState<boolean>(false)
 
-  const modifiedRef = React.useRef<boolean>(false)
+  const modifiedRef = useRef<boolean>(false)
   const initialDataRef = useContinuousRef(initialData)
 
-  const setModified = React.useCallback((value: boolean) => {
+  const setModified = useCallback((value: boolean) => {
     if (value === modifiedRef.current) { return }
     setModifiedState(modifiedRef.current = value)
   }, [])
@@ -126,12 +136,12 @@ export const FormProvider = observer(<M extends FormModel>(props: FormProviderPr
 
   const invalid = errors.length > 0
 
-  const isInvalid = React.useCallback(
+  const isInvalid = useCallback(
     (field: keyof FormData<M>) => some(errors, error => error.field === field),
     [errors],
   )
 
-  const errorsFor = React.useCallback((field: keyof FormData<M> | null, includeChildren: boolean = false) => {
+  const errorsFor = useCallback((field: keyof FormData<M> | null, includeChildren: boolean = false) => {
     return errors.filter(error => {
       if (error.field === field) { return true }
       if (includeChildren && error.field?.startsWith(`${String(field)}.`)) { return true }
@@ -139,8 +149,8 @@ export const FormProvider = observer(<M extends FormModel>(props: FormProviderPr
     })
   }, [errors])
 
-  const errorsRef = React.useRef<FormError[]>(errors)
-  const addError = React.useCallback((error: FormError) => {
+  const errorsRef = useRef<FormError[]>(errors)
+  const addError = useCallback((error: FormError) => {
     const newErrors = [
       ...errorsRef.current,
       error,
@@ -148,7 +158,7 @@ export const FormProvider = observer(<M extends FormModel>(props: FormProviderPr
     setErrorsState(errorsRef.current = newErrors)
   }, [])
 
-  const clearErrors = React.useCallback((field?: keyof FormData<M>) => {
+  const clearErrors = useCallback((field?: keyof FormData<M>) => {
     if (field == null) {
       setErrorsState(errorsRef.current = [])
     } else {
@@ -162,8 +172,8 @@ export const FormProvider = observer(<M extends FormModel>(props: FormProviderPr
   const timer = useTimer()
 
   const maySubmit = (model.maySubmit ?? true) && !submitting
-  const submit = React.useCallback(async (...args: any[]): Promise<SubmitResult | undefined> => {
-    const event = isFormEvent(args[0]) ? args.shift() as React.FormEvent : null
+  const submit = useCallback(async (...args: any[]): Promise<SubmitResult | undefined> => {
+    const event = isFormEvent(args[0]) ? args.shift() as FormEvent : null
     const options = args.shift() ?? {} as SubmitOptions
 
     event?.preventDefault()
@@ -213,11 +223,12 @@ export const FormProvider = observer(<M extends FormModel>(props: FormProviderPr
   //------
   // Data & errors ref
 
-  const commit = React.useCallback(() => {
+  const commit = useCallback(() => {
+    model.commit?.()
     if (autoSubmit) {
       submit()
     }
-  }, [autoSubmit, submit])
+  }, [autoSubmit, model, submit])
 
   const {getFieldValue, setData, onChangeFor, onCommit} = useFormDataSource<M>(
     model,
@@ -228,7 +239,7 @@ export const FormProvider = observer(<M extends FormModel>(props: FormProviderPr
     },
   )
 
-  const reset = React.useCallback(() => {
+  const reset = useCallback(() => {
     model.reset?.()
 
     if (initialDataRef.current != null) {
@@ -239,11 +250,11 @@ export const FormProvider = observer(<M extends FormModel>(props: FormProviderPr
     setModified(false)
   }, [clearErrors, initialDataRef, model, setData, setModified])
 
-  React.useEffect(() => {
+  useEffect(() => {
     reset()
   }, [reset])
 
-  const context = React.useMemo((): FormContext<M> => ({
+  const context = useMemo((): FormContext<M> => ({
     model,
     dataSource: model,
     setData,
@@ -268,7 +279,7 @@ export const FormProvider = observer(<M extends FormModel>(props: FormProviderPr
     reset,
   }), [addError, clearErrors, commit, errors, errorsFor, getFieldValue, invalid, isInvalid, maySubmit, model, modified, onChangeFor, onCommit, reset, setData, setModified, submit, submitting])
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (formRef == null) { return }
     assignRef(formRef, context)
     return () => { releaseRef(formRef, context) }
@@ -296,7 +307,7 @@ export const FormProvider = observer(<M extends FormModel>(props: FormProviderPr
 //------
 // Helpers
 
-function isFormEvent(arg: any): arg is React.FormEvent {
+function isFormEvent(arg: any): arg is FormEvent {
   if (!isObject(arg)) { return false }
-  return (arg as React.FormEvent).nativeEvent instanceof Event
+  return (arg as FormEvent).nativeEvent instanceof Event
 }

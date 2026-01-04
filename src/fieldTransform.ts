@@ -1,9 +1,9 @@
-export function fieldTransform<T, U>(fromValue: (value: T) => U, toValue: (raw: U) => T): FieldTransform<T, U> {
+export function fieldTransform<Val, Raw>(fromValue: (value: Val) => Raw, toValue: (raw: Raw) => Val): FieldTransform<Val, Raw> {
   return {fromValue, toValue}
 }
 
-export type FieldTransform<T, U> = {
-  fromValue: (value: T) => U
-  toValue:   (raw: U) => T
+export type FieldTransform<Val, Raw> = {
+  fromValue: (value: Val) => Raw
+  toValue:   (raw: Raw) => Val
 }
 

@@ -11,7 +11,7 @@ export interface FormModel {
 }
 
 export interface ProxyFormModel<D extends Record<string | number | symbol, any>> extends FormModel {
-  getValue: (field: keyof D) => void
+  getValue: (field: keyof D) => unknown
   setValue: (field: keyof D, value: any) => void
 }
 

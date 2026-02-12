@@ -1,5 +1,6 @@
 import { isFunction } from 'lodash'
 import { FormEvent, ReactNode } from 'react'
+import { PropertiesOf } from 'ytil'
 import { SubmitResult } from './SubmitResult'
 
 export interface FormModel {
@@ -17,7 +18,7 @@ export interface ProxyFormModel<D extends Record<string | number | symbol, any>>
 
 export type FormData<M extends FormModel> =
   M extends ProxyFormModel<infer D> ? D
-    : Omit<{[K in keyof M as M[K] extends (Function | undefined) ? never : K extends string ? K : never]: M[K]}, 'maySubmit'>
+    : Omit<PropertiesOf<M>, 'submit' | 'reset' | 'commit' | 'maySubmit'>
 
 export function isProxyModel<D extends Record<string | number | symbol, any>>(model: FormModel): model is ProxyFormModel<D> {
   const proxyModel = model as ProxyFormModel<any>
@@ -62,3 +63,6 @@ export interface CustomSaveButton {
   icon?:   ReactNode
   caption: string
 }
+
+export type BeforeSubmitCallback<M extends FormModel> = (model: M) => boolean
+export type AfterSubmitCallback<M extends FormModel> = (result: SubmitResult, model: M) => void

@@ -1,6 +1,7 @@
-import { useCallback, useContext } from 'react'
-import { FormContext } from '../FormContext'
+import { useCallback } from 'react'
+import { FormInstance } from '../Form'
 import { ChangeCallback, CommitCallback, FormError } from '../types'
+import { useForm } from './useForm'
 
 //------
 // useFormField hook
@@ -9,7 +10,7 @@ export function useFormField<T>(name: string): FormFieldHook<T>
 export function useFormField(name: null): FormFieldHook<null>
 export function useFormField<T>(name: string | null): FormFieldHook<T | null>
 export function useFormField<T>(name: string | null): FormFieldHook<T | null> {
-  const form = useContext(FormContext)
+  const form = useForm()
   const noop = useCallback(() => {/*noop*/}, [])
 
   const value = name == null ? null : form.getFieldValue(name as never) as T
@@ -26,11 +27,11 @@ export type FormFieldHook<T = any> = [
   T,
   ChangeCallback<T>,
   FormError[],
-  FormContext<any>,
+  FormInstance<any>,
 ] & {
   value:    T
   onChange: ChangeCallback<T>
   onCommit: CommitCallback
   errors:   FormError[]
-  form:     FormContext<any>
+  form:     FormInstance<any>
 }

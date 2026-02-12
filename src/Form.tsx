@@ -12,21 +12,21 @@ import React, {
   useState,
 } from 'react'
 import { useTimer } from 'react-timer'
-import { assignRef, releaseRef, useContinuousRef } from 'react-util/hooks'
+import { assignRef, releaseRef } from 'react-util/hooks'
 import { SubmitResult } from './SubmitResult'
 import { translateFormModelErrorPaths } from './errors'
-import { useFormDataSource } from './hooks'
-import { FormTranslationFunctions, FormTranslationProvider } from './translation'
+import { useFormDataSource } from './hooks/useFormDataSource'
 import {
+  AfterSubmitCallback,
+  BeforeSubmitCallback,
   ChangeCallback,
   FormData,
   FormError,
   FormModel,
-  SubmitFunction,
   SubmitOptions,
 } from './types'
 
-export interface FormContext<M extends FormModel> {
+export interface FormInstance<M extends FormModel> {
   // Data
   model:      M
   dataSource: any
@@ -48,75 +48,41 @@ export interface FormContext<M extends FormModel> {
   modified:    boolean
   setModified: (modified: boolean) => void
 
+  // Listeners
+  onAfterSubmit: (callback: AfterSubmitCallback<M>) => void
+  onBeforeSubmit: (callback: BeforeSubmitCallback<M>) => void
+
   // Submission
-  submit:     SubmitFunction
+  submit:     (event?: FormEvent) => Promise<SubmitResult | undefined>
   submitting: boolean
   maySubmit:  boolean
   commit:     () => void
   reset:      () => void
 }
 
-export const FormContext = createContext<FormContext<any>>({
-  model:      {},
-  dataSource: {},
-
-  setData:       () => void 0,
-  getFieldValue: () => null,
-  onChangeFor:   () => () => void 0,
-  onCommit:      () => void 0,
-
-  // Invalidation
-  invalid:     false,
-  errors:      [],
-  isInvalid:   () => false,
-  errorsFor:   () => [],
-  addError:    () => void 0,
-  clearErrors: () => void 0,
-
-  // Modified
-  modified:    false,
-  setModified: () => void 0,
-
-  // Submission
-  submit:     () => Promise.resolve(void 0),
-  maySubmit:  false,
-  submitting: false,
-  commit:     () => void 0,
-  reset:      () => void 0,
-})
-
-//------
-// FormProvider]
-
 export interface FormProviderProps<M extends FormModel> {
-  model:           M
-  initialData?:    FormData<M>
+  model: M
+
+  beforeSubmit?: BeforeSubmitCallback<M>
+  afterSubmit?: AfterSubmitCallback<M>
+
   autoSubmit?:     boolean
   resetOnSuccess?: boolean
 
-  translation?: FormTranslationFunctions
-  formRef?:     Ref<FormContext<M> | null>
-
-  beforeSubmit?: (model: M) => boolean | undefined
-  afterSubmit?:  AfterSubmitCallback<M>
-
-  children?: ReactNode | ((form: FormContext<M>) => ReactNode)
+  formRef?:        Ref<FormInstance<M> | null>
+  children?:       ReactNode | ((form: FormInstance<M>) => ReactNode)
 }
-export type AfterSubmitCallback<M extends FormModel> = (result: SubmitResult, model: M) => void
-
 
 export const FormProvider = observer(<M extends FormModel>(props: FormProviderProps<M>) => {
-
   const {
     model,
-    initialData,
+    beforeSubmit: props_beforeSubmit,
+    afterSubmit: props_afterSubmit,
     resetOnSuccess = false,
+    autoSubmit = false,
     formRef,
-    autoSubmit,
-    beforeSubmit,
-    afterSubmit,
-    translation,
     children,
+    ...downstream
   } = props
 
   const [modified, setModifiedState] = useState<boolean>(false)
@@ -124,12 +90,12 @@ export const FormProvider = observer(<M extends FormModel>(props: FormProviderPr
   const [submitting, setSubmitting] = useState<boolean>(false)
 
   const modifiedRef = useRef<boolean>(false)
-  const initialDataRef = useContinuousRef(initialData)
 
   const setModified = useCallback((value: boolean) => {
     if (value === modifiedRef.current) { return }
     setModifiedState(modifiedRef.current = value)
   }, [])
+
 
   //------
   // Invalidation
@@ -165,6 +131,39 @@ export const FormProvider = observer(<M extends FormModel>(props: FormProviderPr
       setErrorsState(errorsRef.current = errorsRef.current.filter(error => error.field !== field))
     }
   }, [])
+
+  // #region Listeners
+
+  const beforeSubmitListenersRef = useRef<Set<BeforeSubmitCallback<M>>>(new Set())
+  const afterSubmitListenersRef = useRef<Set<AfterSubmitCallback<M>>>(new Set())
+
+  const beforeSubmit = useCallback((model: M) => {
+    for (const listener of beforeSubmitListenersRef.current) {
+      if (listener(model) === false) {
+        return false
+      }
+    } 
+    return props_beforeSubmit?.(model) ?? true
+  }, [props_beforeSubmit])
+
+  const afterSubmit = useCallback((result: SubmitResult, model: M) => {
+    for (const listener of afterSubmitListenersRef.current) {
+      listener(result, model)
+    }
+    props_afterSubmit?.(result, model)
+  }, [props_afterSubmit])
+  
+  const onBeforeSubmit = useCallback((callback: BeforeSubmitCallback<M>) => {
+    beforeSubmitListenersRef.current.add(callback)
+    return () => { beforeSubmitListenersRef.current.delete(callback) }
+  }, [])
+
+  const onAfterSubmit = useCallback((callback: AfterSubmitCallback<M>) => {
+    afterSubmitListenersRef.current.add(callback)
+    return () => { afterSubmitListenersRef.current.delete(callback) }
+  }, [])
+
+  // #endregion
 
   //------
   // Submission
@@ -241,20 +240,15 @@ export const FormProvider = observer(<M extends FormModel>(props: FormProviderPr
 
   const reset = useCallback(() => {
     model.reset?.()
-
-    if (initialDataRef.current != null) {
-      setData(initialDataRef.current)
-    }
-
     clearErrors()
     setModified(false)
-  }, [clearErrors, initialDataRef, model, setData, setModified])
+  }, [clearErrors, model, setModified])
 
   useEffect(() => {
     reset()
   }, [reset])
 
-  const context = useMemo((): FormContext<M> => ({
+  const formHandle = useMemo((): FormInstance<M> => ({
     model,
     dataSource: model,
     setData,
@@ -272,40 +266,30 @@ export const FormProvider = observer(<M extends FormModel>(props: FormProviderPr
     modified,
     setModified,
 
+    onBeforeSubmit,
+    onAfterSubmit,
+
     submit,
     maySubmit,
     submitting,
     commit,
     reset,
-  }), [addError, clearErrors, commit, errors, errorsFor, getFieldValue, invalid, isInvalid, maySubmit, model, modified, onChangeFor, onCommit, reset, setData, setModified, submit, submitting])
+  }), [addError, clearErrors, commit, errors, errorsFor, getFieldValue, invalid, isInvalid, maySubmit, model, modified, onAfterSubmit, onBeforeSubmit, onChangeFor, onCommit, reset, setData, setModified, submit, submitting])
 
   useEffect(() => {
     if (formRef == null) { return }
-    assignRef(formRef, context)
-    return () => { releaseRef(formRef, context) }
-  }, [context, formRef])
+    assignRef(formRef, formHandle)
+    return () => { releaseRef(formRef, formHandle) }
+  }, [formHandle, formRef])
 
-  function render() {
-    return (
-      <FormContext.Provider value={context}>
-        <FormTranslationProvider translation={translation}>
-          {renderChildren()}
-        </FormTranslationProvider>
-      </FormContext.Provider>
-    )
-  }
-
-  function renderChildren() {
-    return isFunction(children) ? children(context) : children
-  }
-
-  return render()
-
-
+  return (
+    <FormContext.Provider value={formHandle}>
+      {typeof children === 'function' ? children(formHandle) : children}
+    </FormContext.Provider>
+  )
 })
 
-//------
-// Helpers
+export const FormContext = createContext<FormInstance<any> | null>(null)
 
 function isFormEvent(arg: any): arg is FormEvent {
   if (!isObject(arg)) { return false }

@@ -1,7 +1,11 @@
 import { useContext } from 'react'
-import { FormContext } from '../FormContext'
+import { FormContext, FormInstance } from '../Form'
 import { FormModel } from '../types'
 
-export function useForm<M extends FormModel>() {
-  return useContext<FormContext<M>>(FormContext)
+export function useForm<M extends FormModel>(): FormInstance<M> {
+  const form = useContext(FormContext) as FormInstance<M>
+  if (form == null) {
+    throw new Error('useForm must be used within a Form')
+  }
+  return form
 }

@@ -8,13 +8,13 @@ import { ChangeCallback, FormData, FormModel, isProxyModel } from '../types'
 
 export function useFormDataSource<M extends FormModel>(
   dataSource: any,
-  upstream:   FormDataSourceUpstream,
+  upstream?:  FormDataSourceUpstream,
 ) {
   const {
     modified,
     setModified,
     commit,
-  } = upstream
+  } = upstream ?? {}
 
   const modifiedRef = useRef(modified)
 
@@ -47,7 +47,7 @@ export function useFormDataSource<M extends FormModel>(
       }
     })
 
-    setModified(modifiedRef.current = true)
+    setModified?.(modifiedRef.current = true)
   }, [dataSource, modifiedRef, setModified])
 
 
@@ -69,14 +69,16 @@ export function useFormDataSource<M extends FormModel>(
             dataSource[name] = nextValue
           }
         })
-        setModified(modifiedRef.current = true)
+        setModified?.(modifiedRef.current = true)
       }
       cache.set(name, onChange)
       return onChange
     }
   }, [dataSource, getFieldValue, setModified])
 
-  const onCommit = commit
+  const onCommit = useCallback(() => {
+    commit?.()
+  }, [commit])
 
   return {
     dataSource,

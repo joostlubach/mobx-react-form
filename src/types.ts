@@ -1,6 +1,7 @@
 import { isFunction } from 'lodash'
 import { FormEvent, ReactNode } from 'react'
 import { PropertiesOf } from 'ytil'
+import { FormHandle } from './FormHandle'
 import { SubmitResult } from './SubmitResult'
 
 export interface FormModel {
@@ -64,5 +65,15 @@ export interface CustomSaveButton {
   caption: string
 }
 
-export type BeforeSubmitCallback<M extends FormModel> = (model: M) => boolean
-export type AfterSubmitCallback<M extends FormModel> = (result: SubmitResult, model: M) => void
+export interface FormCallbacks<M extends FormModel> {
+  beforeSubmit: BeforeSubmitCallback<M>
+  afterSubmit: AfterSubmitCallback<M>
+}
+
+export type BeforeSubmitCallback<M extends FormModel> = (form: FormHandle<M>) => boolean | Promise<boolean>
+export type AfterSubmitCallback<M extends FormModel> = (result: SubmitResult, form: FormHandle<M>) => void | Promise<void>
+
+export interface FormOptions {
+  autoSubmit?:     boolean
+  resetOnSuccess?: boolean
+}

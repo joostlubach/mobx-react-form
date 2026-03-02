@@ -47,7 +47,7 @@ export const FormProvider = observer(<M extends FormModel>(props: FormProviderPr
     [autoSubmit, resetOnSuccess],
   )
   form.setModel(model)
-
+  
   useEffect(() => {
     if (beforeSubmit == null) { return }
     return form.onBeforeSubmit(beforeSubmit)

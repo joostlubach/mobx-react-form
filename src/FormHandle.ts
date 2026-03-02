@@ -25,14 +25,9 @@ export class FormHandle<M extends FormModel> {
 
   // #region Model
 
-  @observable
   private accessor _model: M | null = null
   public get model() { return this._model }
-
-  @action
-  public setModel(model: M) {
-    this._model = model
-  }
+  public setModel(model: M) { this._model = model }
 
   // #endregion
 

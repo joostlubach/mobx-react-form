@@ -29,6 +29,7 @@ export interface FormProviderProps<M extends FormModel> extends Partial<FormCall
 }
 
 export const FormProvider = observer(<M extends FormModel>(props: FormProviderProps<M>) => {
+
   const {
     model,
     formRef,
@@ -48,14 +49,14 @@ export const FormProvider = observer(<M extends FormModel>(props: FormProviderPr
   form.setModel(model)
 
   useEffect(() => {
-    const unsubBeforeSubmit = beforeSubmit != null ? form.onBeforeSubmit(beforeSubmit) : () => {}
-    const unsubAfterSubmit = afterSubmit != null ? form.onAfterSubmit(afterSubmit) : () => {}
-    return () => {
-      unsubBeforeSubmit()
-      unsubAfterSubmit()
-    }
+    if (beforeSubmit == null) { return }
+    return form.onBeforeSubmit(beforeSubmit)
+  }, [beforeSubmit, form])
 
-  }, [afterSubmit, beforeSubmit, form])
+  useEffect(() => {
+    if (afterSubmit == null) { return }
+    return form.onAfterSubmit(afterSubmit)
+  }, [afterSubmit, form])
 
   useEffect(() => {
     if (formRef == null) { return }

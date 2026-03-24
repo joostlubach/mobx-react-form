@@ -8,6 +8,7 @@ import {
   BeforeSubmitCallback,
   ChangeCallback,
   FormData,
+  FormDataKey,
   FormError,
   FormModel,
   FormOptions,
@@ -26,7 +27,13 @@ export class FormHandle<M extends FormModel> {
   // #region Model
 
   private accessor _model: M | null = null
-  public get model() { return this._model }
+  public get model() {
+    if (this._model == null) {
+      throw new Error('Form model is not set')
+    }
+    return this._model
+  }
+  
   public setModel(model: M) { this._model = model }
 
   // #endregion
@@ -36,12 +43,13 @@ export class FormHandle<M extends FormModel> {
   @action
   public setData(data: FormData<M>) {
     for (const [key, value] of objectEntries(data)) {
+      if (typeof key !== 'string') { continue }
       this.setFieldValue(key, value)
     }
   }
 
   @action
-  public setFieldValue(field: keyof FormData<M>, value: any) {
+  public setFieldValue(field: FormDataKey<M>, value: any) {
     if (this.model == null) { return }
     if (isProxyModel(this.model)) {
       this.model.setValue(field, value)
@@ -51,7 +59,7 @@ export class FormHandle<M extends FormModel> {
     this.setModified()
   }
 
-  public getFieldValue<K extends keyof FormData<M>>(field: K): FormData<M>[K] {
+  public getFieldValue<K extends FormDataKey<M>>(field: K): FormData<M>[K] {
     if (this.model == null) { return null as FormData<M>[K] }
 
     if (isProxyModel(this.model)) {
@@ -61,7 +69,7 @@ export class FormHandle<M extends FormModel> {
     }
   }
 
-  public onChangeFor<K extends keyof FormData<M>>(field: K): ChangeCallback<FormData<M>[K]> {
+  public onChangeFor<K extends FormDataKey<M>>(field: K): ChangeCallback<FormData<M>[K]> {
     return value => this.setFieldValue(field, value)
   }
 
@@ -81,45 +89,46 @@ export class FormHandle<M extends FormModel> {
 
   // #region Errors
 
-  @observable
-  private accessor errors: FormError[] = []
-
-  public get allErrors() {
-    return this.errors
-  }
+  @observable.ref
+  private accessor _errors: FormError[] = []
+  public get errors() { return this._errors }
 
   @computed
   public get invalid() {
-    return this.errors.length > 0
+    return this._errors.length > 0
   }
 
-  public isInvalid(field: keyof FormData<M>) {
-    return some(this.errors, error => error.field === field)
+  public isInvalid(field: FormDataKey<M>) {
+    return some(this._errors, error => error.field === field)
   }
 
-  @action
-  public errorsFor(field: keyof FormData<M> | null, includeChildren: boolean = false): FormError[] {
-    return this.errors.filter(error => {
+  public errorsFor(field: FormDataKey<M> | null, includeChildren: boolean = false): FormError[] {
+    return this._errors.filter(error => {
       if (error.field === field) { return true }
-      if (includeChildren && error.field?.startsWith(`${String(field)}.`)) { return true }
+      if (includeChildren && error.field?.startsWith(`${field}.`)) { return true }
       return false
     })
   }
 
   @action
+  public setErrors(errors: FormError[]) {
+    this._errors = errors
+  }
+
+  @action
   public addError(error: FormError) {
-    this.errors = [
-      ...this.errors,
+    this._errors = [
+      ...this._errors,
       error,
     ]
   }
 
   @action
-  public clearErrors(field?: keyof FormData<M>) {
+  public clearErrors(field?: FormDataKey<M>) {
     if (field == null) {
-      this.errors = []
+      this._errors = []
     } else {
-      this.errors = this.errors.filter(error => error.field !== field)
+      this._errors = this._errors.filter(error => error.field !== field)
     }
   }
 
@@ -186,7 +195,7 @@ export class FormHandle<M extends FormModel> {
 
   private async invokeAfterSubmit(result: SubmitResult) {
     for (const callback of this.afterSubmitCallbacks) {
-      await callback(result, this)
+      await action(callback)(result, this)
     }
   }
 
@@ -208,7 +217,6 @@ export class FormHandle<M extends FormModel> {
     this.startSubmitting()
     this.clearErrors()
 
-
     try {
       let result = await this.model.submit()
       if (result == null) { return }
@@ -221,8 +229,8 @@ export class FormHandle<M extends FormModel> {
         if (this.options.resetOnSuccess) {
           this.reset()
         }
-      } else if (SubmitResult.isInvalid(result)) {
-        this.errors = result.errors
+      } else if (SubmitResult.isInvalid(result) && this.options.assignErrors !== false) {
+        this.setErrors(result.errors)
       }
 
       await this.invokeAfterSubmit(result)

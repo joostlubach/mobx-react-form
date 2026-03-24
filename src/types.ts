@@ -21,6 +21,8 @@ export type FormData<M extends FormModel> =
   M extends ProxyFormModel<infer D> ? D
     : Omit<PropertiesOf<M>, 'submit' | 'reset' | 'commit' | 'maySubmit'>
 
+export type FormDataKey<M extends FormModel> = keyof FormData<M> & string
+
 export function isProxyModel<D extends Record<string | number | symbol, any>>(model: FormModel): model is ProxyFormModel<D> {
   const proxyModel = model as ProxyFormModel<any>
   return isFunction(proxyModel.setValue) && isFunction(proxyModel.getValue)
@@ -76,4 +78,5 @@ export type AfterSubmitCallback<M extends FormModel> = (result: SubmitResult, fo
 export interface FormOptions {
   autoSubmit?:     boolean
   resetOnSuccess?: boolean
+  assignErrors?:   boolean
 }

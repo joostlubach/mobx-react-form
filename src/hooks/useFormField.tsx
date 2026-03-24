@@ -10,7 +10,7 @@ export function useFormField<T>(name: string): FormFieldHook<T>
 export function useFormField(name: null): FormFieldHook<null>
 export function useFormField<T>(name: string | null): FormFieldHook<T | null>
 export function useFormField<T>(name: string | null): FormFieldHook<T | null> {
-  const {form} = useForm()
+  const form = useForm()
   const noop = useCallback(() => {/*noop*/}, [])
 
   const value = name == null ? null : form.getFieldValue(name as never) as T

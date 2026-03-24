@@ -2,21 +2,16 @@ import { observer } from 'mobx-react'
 import React, { createContext, ReactNode, Ref, useEffect, useMemo } from 'react'
 import { assignRef, releaseRef } from 'react-util/hooks'
 import { FormHandle } from './FormHandle'
-import { FormCallbacks, FormData, FormError, FormModel, FormOptions } from './types'
-
-export interface FormContext<M extends FormModel> {
-  model: M
-  form:  FormHandle<M>
-}
+import { FormCallbacks, FormData, FormDataKey, FormError, FormModel, FormOptions } from './types'
 
 export interface FormState<M extends FormModel> {
-  getFieldValue: <K extends keyof FormData<M>>(field: K) => FormData<M>[K]
-  onChangeFor:   <K extends keyof FormData<M>>(field: K) => (value: FormData<M>[K]) => void
+  getFieldValue: <K extends FormDataKey<M>>(field: K) => FormData<M>[K]
+  onChangeFor:   <K extends FormDataKey<M>>(field: K) => (value: FormData<M>[K]) => void
   onCommit:      () => void
   
   errors:      FormError[]
-  isInvalid:   (field: keyof FormData<M>) => boolean
-  errorsFor:   (field: keyof FormData<M> | null, includeChildren?: boolean) => FormError[]
+  isInvalid:   (field: FormDataKey<M>) => boolean
+  errorsFor:   (field: FormDataKey<M> | null, includeChildren?: boolean) => FormError[]
   
   modified:    boolean
   submitting: boolean
@@ -68,16 +63,11 @@ export const FormProvider = observer(<M extends FormModel>(props: FormProviderPr
     form.reset()
   }, [form])
 
-  const context = useMemo((): FormContext<M> => ({
-    form,
-    model,
-  }), [form, model])
-
   return (
-    <FormContext.Provider value={context}>
+    <FormContext.Provider value={form}>
       {typeof children === 'function' ? children(form) : children}
     </FormContext.Provider>
   )
 })
 
-export const FormContext = createContext<FormContext<any> | null>(null)
+export const FormContext = createContext<FormHandle<any> | null>(null)

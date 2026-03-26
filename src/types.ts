@@ -8,7 +8,7 @@ export interface FormModel {
   maySubmit?: boolean
   submit():   Promise<SubmitResult | undefined> | SubmitResult | undefined
 
-  reset?(): void
+  reset?(): void | Promise<void>
   commit?(): void
 }
 

@@ -73,8 +73,8 @@ export class FormHandle<M extends FormModel> {
     return value => this.setFieldValue(field, value)
   }
 
-  public reset() {
-    this.model?.reset?.()
+  public async reset() {
+    await this.model?.reset?.()
   }
 
   public commit() {
@@ -227,7 +227,7 @@ export class FormHandle<M extends FormModel> {
       if (SubmitResult.isOk(result)) {
         this.clearModified()
         if (this.options.resetOnSuccess) {
-          this.reset()
+          await this.reset()
         }
       } else if (SubmitResult.isInvalid(result) && this.options.assignErrors !== false) {
         this.setErrors(result.errors)

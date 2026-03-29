@@ -49,6 +49,7 @@ export type CommitCallback = () => void
 export interface FormError {
   field:    string | null
   code?:    string | null
+  params?:  Record<string, unknown> | null
   message?: string | null
 }
 

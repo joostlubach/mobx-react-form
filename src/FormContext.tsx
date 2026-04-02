@@ -63,11 +63,17 @@ export const FormProvider = observer(<M extends FormModel>(props: FormProviderPr
     form.reset()
   }, [form])
 
+  const contextValue = useMemo(() => ({form, model}), [form, model])
   return (
-    <FormContext.Provider value={form}>
+    <FormContext.Provider value={contextValue}>
       {typeof children === 'function' ? children(form) : children}
     </FormContext.Provider>
   )
 })
 
-export const FormContext = createContext<FormHandle<any> | null>(null)
+export interface FormContext<M extends FormModel> {
+  form: FormHandle<M>
+  model: M
+}
+
+export const FormContext = createContext<FormContext<any> | null>(null)

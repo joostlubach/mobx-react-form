@@ -13,8 +13,8 @@ export interface FormModel {
 }
 
 export interface ProxyFormModel<D extends Record<string | number | symbol, any>> extends FormModel {
-  getValue: (field: keyof D) => unknown
-  setValue: (field: keyof D, value: any) => void
+  getValue: (field: keyof D & string) => unknown
+  setValue: (field: keyof D & string, value: any) => void
 }
 
 export type FormData<M extends FormModel> =

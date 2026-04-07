@@ -19,6 +19,7 @@ export interface FormState<M extends FormModel> {
 
 export interface FormProviderProps<M extends FormModel> extends Partial<FormCallbacks<M>>, FormOptions {
   model: M
+  errors?: FormError[]
   formRef?: Ref<FormHandle<M> | null>
   children?: ReactNode | ((form: FormHandle<M>) => ReactNode)
 }
@@ -27,6 +28,7 @@ export const FormProvider = observer(<M extends FormModel>(props: FormProviderPr
 
   const {
     model,
+    errors,
     formRef,
     children,
 
@@ -42,6 +44,11 @@ export const FormProvider = observer(<M extends FormModel>(props: FormProviderPr
     [autoSubmit, resetOnSuccess],
   )
   form.setModel(model)
+  useEffect(() => {
+    if (errors != null) {
+      form.setErrors(errors ?? [])
+    }
+  }, [errors, form])
   
   useEffect(() => {
     if (beforeSubmit == null) { return }

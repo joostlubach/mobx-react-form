@@ -17,9 +17,11 @@ export interface SubmitInvalid {
   errors: FormError[]
 }
 
-export interface SubmitHttpError {
+export interface SubmitHttpError<E = any, M = any> {
   status:  number
   message: string
+  error?:  E
+  meta?:   M
 }
 
 export interface SubmitError {

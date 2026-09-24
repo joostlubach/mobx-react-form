@@ -1,3 +1,4 @@
+import { isPlainObject } from 'ytil'
 import { FormError } from './types'
 
 export type SubmitResult<D = any, M = any> =
@@ -61,6 +62,14 @@ export namespace SubmitResult {
       status: 'error',
       error,
     }
+  }
+
+  export function is(value: any): value is SubmitResult {
+    if (!isPlainObject(value)) { return false }
+    if (!('status' in value)) { return false }
+    
+    if (typeof value.status === 'number') { return true }
+    return ['ok', 'invalid', 'error'].includes(value.status)
   }
 
   export function isOk(result: SubmitResult): result is SubmitOk {

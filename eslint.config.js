@@ -38,6 +38,7 @@ module.exports = [
       '@stylistic': require('@stylistic/eslint-plugin'),
       'react-refresh': require('eslint-plugin-react-refresh'),
       'react-hooks': require('eslint-plugin-react-hooks'),
+      'jsx-a11y': require('eslint-plugin-jsx-a11y'),
       'unused-imports': require('eslint-plugin-unused-imports'),
       '@mosdev': require('@mosdev/eslint-plugin')
     },
@@ -45,6 +46,7 @@ module.exports = [
     rules: {
       ...yaml.parse(FS.readFileSync('../../eslint.rules.yml', 'utf-8')),
       ...yaml.parse(FS.readFileSync('../../eslint.rules.react.yml', 'utf-8')),
+      ...require('eslint-plugin-jsx-a11y').flatConfigs.recommended.rules,
     }
   }
 ]

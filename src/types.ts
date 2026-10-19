@@ -10,6 +10,9 @@ export interface FormModel {
 
   reset?(): void | Promise<void>
   commit?(): void
+
+  // Set to false if a successful submit does not complete the form, e.g. intermediate steps.
+  isFinalSubmit?: boolean
 }
 
 export interface ProxyFormModel<D extends Record<string | number | symbol, any>> extends FormModel {
@@ -19,7 +22,7 @@ export interface ProxyFormModel<D extends Record<string | number | symbol, any>>
 
 export type FormData<M extends FormModel> =
   M extends ProxyFormModel<infer D> ? D
-    : Omit<PropertiesOf<M>, 'submit' | 'reset' | 'commit' | 'maySubmit'>
+    : Omit<PropertiesOf<M>, 'submit' | 'reset' | 'commit' | 'maySubmit' | 'isFinalSubmit'>
 
 export type FormDataKey<M extends FormModel> = keyof FormData<M> & string
 

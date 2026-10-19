@@ -3,6 +3,7 @@ import { action, computed, makeObservable, observable } from 'mobx'
 import { bindMethods, objectEntries } from 'ytil'
 import { SubmitResult } from './SubmitResult'
 import { translateFormModelErrorPaths } from './errors'
+import { clearPersistedState, restorePersistedState } from './persistence'
 import {
   AfterSubmitCallback,
   BeforeSubmitCallback,
@@ -74,7 +75,10 @@ export class FormHandle<M extends FormModel> {
   }
 
   public async reset() {
-    await this.model?.reset?.()
+    if (this._model == null) { return }
+
+    await this._model.reset?.()
+    await restorePersistedState(this._model)
   }
 
   public commit() {
@@ -217,6 +221,9 @@ export class FormHandle<M extends FormModel> {
     this.startSubmitting()
     this.clearErrors()
 
+    // Determine this beforehand, as submitting may change the state of the model.
+    const isFinal = this.model.isFinalSubmit ?? true
+
     try {
       let result = await this.model.submit()
       if (result == null) { return }
@@ -226,6 +233,9 @@ export class FormHandle<M extends FormModel> {
 
       if (SubmitResult.isOk(result)) {
         this.clearModified()
+        if (isFinal) {
+          await clearPersistedState(this.model)
+        }
         if (this.options.resetOnSuccess) {
           await this.reset()
         }

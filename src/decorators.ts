@@ -22,7 +22,8 @@ export function field(options: FieldOptions = {}) {
       }
 
       if (persist !== false) {
-        registerPersistedField(ctor, name, persist === true ? undefined : persist)
+        const persistence = persist === true ? FieldPersistence.defaultFor(name, name) : persist
+        registerPersistedField(ctor, name, persistence)
       }
     })
 

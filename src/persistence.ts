@@ -3,42 +3,37 @@ import { IObservableValue, IReactionDisposer, observable, reaction, runInAction,
 import { AnyConstructor } from 'ytil'
 import { FormModel } from './types'
 
-export function autoPersist<S>(model: FormModel, key: string, options?: AutoPersistOptions<S>) {
-  const {storage, serializer} = (options ?? DEFAULT_OPTIONS) as AutoPersistOptions<unknown>
-
+export function autoPersistForm<S>(model: FormModel, key: string, storage: PersistStorage<S>, options: AutoPersistOptions<S> & {serializer: PersistSerializer<S>}): void
+export function autoPersistForm(model: FormModel, key: string, storage: PersistStorage<string>, options?: AutoPersistOptions<string>): void
+export function autoPersistForm<S>(model: FormModel, key: string, storage: PersistStorage<S>, options: AutoPersistOptions<S> = {}) {
   $instances.set(model, {
-    key,
-    storage,
-    serializer,
+    key:      key,
+    storage:  storage,
+    options:  options,
     status:   observable.box<PersistStatus>('idle'),
     disposer: null,
   })
 }
 
-/**
- * Clears all persisted form state in the given storage, e.g. upon logging out.
- */
-export async function clearPersistedForms<S>(options?: AutoPersistOptions<S>) {
-  const {storage} = (options ?? DEFAULT_OPTIONS) as AutoPersistOptions<unknown>
-  await storage.clear()
-}
-
-export function persisted<T>(persistence?: FieldPersistence<T>) {
+export function persist<T>(name: string, persistence?: FieldPersistence<T>): (tgt: unknown, context: ClassAccessorDecoratorContext<FormModel, T>) => void
+export function persist<T>(persistence?: FieldPersistence<T>): (tgt: unknown, context: ClassAccessorDecoratorContext<FormModel, T>) => void
+export function persist<T>(...args: any[]) {
   return (_: unknown, context: ClassAccessorDecoratorContext<FormModel, T>) => {
-    if (typeof context.name !== 'string') { return }
-    const name = context.name
+    const key = typeof args[0] === 'string' ? args.shift() : context.name
+    const persistence = args.shift()
+    if (typeof key !== 'string') { return }
 
     context.addInitializer(function (this: FormModel) {
-      registerPersistedField(this.constructor as AnyConstructor, name, persistence)
+      registerPersistedField(this.constructor as AnyConstructor, key, persistence)
     })
   }
 }
 
-export function registerPersistedField(ctor: AnyConstructor, name: string, persistence?: FieldPersistence<any>) {
+export function registerPersistedField(ctor: AnyConstructor, key: string | symbol, persistence?: FieldPersistence<any>) {
   const fields = $fields.get(ctor) ?? new Map<string, FieldPersistence<any>>()
-  fields.set(name, persistence ?? {
-    persist: model => get(model, name),
-    restore: (model, value) => { set(model, name, value) },
+  fields.set(key, persistence ?? {
+    persist: model => get(model, key),
+    restore: (model, value) => { set(model, key, value) },
   })
   $fields.set(ctor, fields)
 }
@@ -57,13 +52,15 @@ export async function restorePersistedState(model: FormModel) {
   const instance = $instances.get(model)
   if (instance == null) { return }
 
+  const serializer = instance.options.serializer ?? DEFAULT_SERIALIZER
+
   stopPersisting(instance)
   runInAction(() => instance.status.set('restoring'))
-
+  
   try {
     const raw = await instance.storage.getItem(instance.key)
     if (raw != null) {
-      applyState(model, instance.serializer.deserialize(raw))
+      applyState(model, serializer.deserialize(raw))
     }
   } catch (error) {
     console.warn(`Could not restore persisted form state "${instance.key}"`, error)
@@ -71,7 +68,7 @@ export async function restorePersistedState(model: FormModel) {
 
   instance.disposer = reaction(
     () => collectState(model),
-    state => { instance.storage.setItem(instance.key, instance.serializer.serialize(state)) },
+    state => { instance.storage.setItem(instance.key, serializer.serialize(state)) },
   )
   runInAction(() => instance.status.set('ready'))
 }
@@ -84,15 +81,15 @@ export async function clearPersistedState(model: FormModel) {
   await instance.storage.removeItem(instance.key)
 }
 
-function stopPersisting(instance: PersistedInstance) {
+function stopPersisting<S>(instance: PersistInstance<S>) {
   instance.disposer?.()
   instance.disposer = null
 }
 
 function collectState(model: FormModel): PersistedState {
   const state: PersistedState = {}
-  for (const [name, persistence] of persistedFields(model)) {
-    state[name] = toJS(persistence.persist(model))
+  for (const [key, persistence] of persistedFields(model)) {
+    state[key] = toJS(persistence.persist(model))
   }
   return state
 }
@@ -112,12 +109,11 @@ function persistedFields(model: FormModel) {
   return $fields.get(model.constructor as AnyConstructor)?.entries() ?? []
 }
 
-const $fields = new WeakMap<AnyConstructor, Map<string, FieldPersistence<any>>>()
-const $instances = new WeakMap<FormModel, PersistedInstance>()
+const $fields = new WeakMap<AnyConstructor, Map<string | symbol, FieldPersistence<any>>>()
+const $instances = new WeakMap<FormModel, PersistInstance<any>>()
 
 export interface AutoPersistOptions<S> {
-  storage:    PersistStorage<S>
-  serializer: PersistSerializer<S>
+  serializer?: PersistSerializer<S>
 }
 
 export interface PersistStorage<S> {
@@ -137,39 +133,38 @@ export interface FieldPersistence<T> {
   restore: (model: object, value: T) => void
 }
 
-export type PersistedState = Record<string, unknown>
+export type PersistedState = Record<string | symbol, unknown>
 
 type PersistStatus = 'idle' | 'restoring' | 'ready'
 
-interface PersistedInstance {
+interface PersistInstance<S> {
   key:        string
-  storage:    PersistStorage<unknown>
-  serializer: PersistSerializer<unknown>
+  storage:    PersistStorage<S>
+  options:    AutoPersistOptions<S>
   status:     IObservableValue<PersistStatus>
   disposer:   IReactionDisposer | null
 }
 
 const LOCAL_STORAGE_PREFIX = 'mobx-react-form.'
 
-const DEFAULT_OPTIONS: AutoPersistOptions<string> = {
-  storage: {
-    getItem:    key => globalThis.localStorage?.getItem(`${LOCAL_STORAGE_PREFIX}${key}`) ?? null,
-    setItem:    (key, value) => globalThis.localStorage?.setItem(`${LOCAL_STORAGE_PREFIX}${key}`, value),
-    removeItem: key => globalThis.localStorage?.removeItem(`${LOCAL_STORAGE_PREFIX}${key}`),
-    clear:      () => {
-      const storage = globalThis.localStorage
-      if (storage == null) { return }
+export const localStorage: PersistStorage<string> = {
+  getItem:    key => globalThis.localStorage?.getItem(`${LOCAL_STORAGE_PREFIX}${key}`) ?? null,
+  setItem:    (key, value) => globalThis.localStorage?.setItem(`${LOCAL_STORAGE_PREFIX}${key}`, value),
+  removeItem: key => globalThis.localStorage?.removeItem(`${LOCAL_STORAGE_PREFIX}${key}`),
+  clear:      () => {
+    const storage = globalThis.localStorage
+    if (storage == null) { return }
 
-      const keys = Array.from({length: storage.length}, (_, index) => storage.key(index))
-      for (const key of keys) {
-        if (key?.startsWith(LOCAL_STORAGE_PREFIX)) {
-          storage.removeItem(key)
-        }
+    const keys = Array.from({length: storage.length}, (_, index) => storage.key(index))
+    for (const key of keys) {
+      if (key?.startsWith(LOCAL_STORAGE_PREFIX)) {
+        storage.removeItem(key)
       }
-    },
+    }
   },
-  serializer: {
-    serialize:   state => JSON.stringify(state),
-    deserialize: raw => JSON.parse(raw),
-  },
+}
+
+const DEFAULT_SERIALIZER: PersistSerializer<string> = {
+  serialize:   state => JSON.stringify(state),
+  deserialize: raw => JSON.parse(raw),
 }

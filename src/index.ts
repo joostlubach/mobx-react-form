@@ -7,10 +7,10 @@ export * from './fieldTransform'
 export * from './focus'
 export * from './hooks'
 export {
-  autoPersist,
-  clearPersistedForms,
+  autoPersistForm,
   isRestoringPersistedState,
-  persisted,
+  persist,
+  localStorage,
   type AutoPersistOptions,
   type FieldPersistence,
   type PersistedState,

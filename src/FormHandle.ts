@@ -57,6 +57,11 @@ export class FormHandle<M extends FormModel> {
     } else {
       (this.model as any)[field] = value
     }
+
+    if (this.options.clearErrorsOnChange !== false) {
+      this.clearErrors(field)
+    }
+
     this.setModified()
   }
 

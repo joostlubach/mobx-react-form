@@ -80,7 +80,8 @@ export type BeforeSubmitCallback<M extends FormModel> = (form: FormHandle<M>) =>
 export type AfterSubmitCallback<M extends FormModel> = (result: SubmitResult, form: FormHandle<M>) => void | Promise<void>
 
 export interface FormOptions {
-  autoSubmit?:     boolean
-  resetOnSuccess?: boolean
-  assignErrors?:   boolean
+  autoSubmit?:          boolean
+  resetOnSuccess?:      boolean
+  assignErrors?:        boolean
+  clearErrorsOnChange?: boolean
 }
